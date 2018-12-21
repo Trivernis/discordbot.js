@@ -66,6 +66,7 @@ function registerCommands() {
     cmd.createCommand('~', 'plist', (msg) => {
         let gid = msg.guild.id;
         let songs = music.getQueue(gid);
+        logger.debug(`found ${songs.length} songs`);
         let songlist = "**Songs**\n";
         for (let i = 0; i < songs.length; i++) {
             if (i > 10) break;
