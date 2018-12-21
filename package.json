@@ -2,14 +2,14 @@
   "name": "discordbot",
   "version": "1.0.0",
   "dependencies": {
-    "args-parser": "^1.1.0",
-    "discord.js": "^11.4.2",
-    "ffmpeg-binaries": "^4.0.0",
-    "get-youtube-title": "^1.0.0",
+    "args-parser": "1.1.0",
+    "discord.js": "11.4.2",
+    "ffmpeg-binaries": "4.0.0",
+    "get-youtube-title": "1.0.0",
     "opusscript": "0.0.6",
-    "winston": "^3.1.0",
-    "winston-daily-rotate-file": "^3.5.1",
-    "youtube-playlist-info": "^1.1.2",
-    "ytdl-core": "^0.26.3"
+    "winston": "3.1.0",
+    "winston-daily-rotate-file": "3.5.1",
+    "youtube-playlist-info": "1.1.2",
+    "ytdl-core": "0.26.3"
   }
 }
