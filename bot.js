@@ -90,7 +90,7 @@ function registerCommands() {
 
     cmd.createCommand('_', 'repeat', (msg, argv) => {
         return argv['repeattext'];
-    }, ['repeattext'])
+    }, ['repeattext']);
 }
 
 // defining the client's handlers
