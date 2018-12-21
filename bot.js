@@ -12,7 +12,6 @@ function main() {
     cmd.setLogger(logger);
     cmd.init();
     registerCommands();
-    music.setClient(client);
     client.login(authToken).then(()=> {
         logger.debug("Logged in");
     });
@@ -20,11 +19,11 @@ function main() {
 
 function registerCommands() {
     cmd.createCommand('~', 'play', (msg, argv) => {
-        let vc = msg.member.voiceChannel;
+        let gid = msg.guild.id;
         let url = argv['url'];
         if (!url) return 'No url given.';
         try {
-            return music.play(vc, url);
+            return music.play(gid, url);
         } catch(err) {
             logger.error(err);
             msg.reply(`${JSON.stringify(err)}`);
@@ -45,47 +44,45 @@ function registerCommands() {
     });
 
     cmd.createCommand('~', 'stop', (msg) => {
-        let vc = msg.member.voiceChannel;
-        music.stop(vc);
+        let gid = msg.guild.id;
+        music.stop(gid);
     });
 
     cmd.createCommand('~', 'pause', (msg) => {
-        let vc = msg.member.voiceChannel;
-        music.pause(vc);
+        let gid = msg.guild.id;
+        music.pause(gid);
     });
 
     cmd.createCommand('~', 'resume', (msg) => {
-        let vc = msg.member.voiceChannel;
-        music.resume(vc);
+        let gid = msg.guild.id;
+        music.resume(gid);
     });
 
     cmd.createCommand('~', 'skip', (msg) => {
-        let vc = msg.member.voiceChannel;
-        music.skip(vc);
+        let gid = msg.guild.id;
+        music.skip(gid);
     });
 
     cmd.createCommand('~', 'plist', (msg) => {
-        let vc = msg.member.voiceChannel;
-        music.getQueue(vc, (songs) => {
-            let songlist = "**Songs**\n";
-            for (let i = 0; i < songs.length; i++) {
-                if (i > 10) break;
-                songlist += songs[i] + '\n';
-            }
-            msg.reply(songlist);
-        });
+        let gid = msg.guild.id;
+        let songs = music.getQueue(gid);
+        let songlist = "**Songs**\n";
+        for (let i = 0; i < songs.length; i++) {
+            if (i > 10) break;
+            songlist += songs[i] + '\n';
+        }
+        return songlist;
     });
 
     cmd.createCommand('~', 'shuffle', (msg) => {
-        let vc = msg.member.voiceChannel;
-        music.shuffle(vc);
+        let gid = msg.guild.id;
+        music.shuffle(gid);
     });
 
     cmd.createCommand('~', 'current', (msg) => {
-        let vc = msg.member.voiceChannel;
-        music.nowPlaying(vc, (title, url) => {
-            msg.reply(`Playing: ${title}\n ${url}`);
-        });
+        let gid = msg.guild.id;
+        let song = music.nowPlaying(gid);
+        return `Playing: ${song.title}\n ${song.url}`;
     });
 
     cmd.createCommand('_', 'repeat', (msg, argv) => {
