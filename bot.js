@@ -35,7 +35,7 @@ function main() {
             }
         })
     });
-    client.login(authToken).then(()=> {
+    client.login(authToken).then(() => {
         logger.debug("Logged in");
     });
 
@@ -44,19 +44,20 @@ function main() {
 
 function registerCommands() {
     cmd.createGlobalCommand(prefix + 'ping', () => {
-       return 'Pong!';
+        return 'Pong!';
     }, [], "Try it yourself.");
 
     cmd.createGlobalCommand(prefix + 'repeatafterme', (msg, argv, args) => {
         return args.join(' ');
-    },[], "Repeats what you say");
+    }, [], "Repeats what you say");
 
     cmd.createGlobalCommand(prefix + 'addpresence', (msg, argv, args) => {
         let p = args.join(' ');
         presences.push(p);
-        fs.writeFile('./data/presences.txt', presences.join('\n'), (err) => {});
+        fs.writeFile('./data/presences.txt', presences.join('\n'), (err) => {
+        });
         return `Added Presence \`${p}\``;
-    },[], "Adds a presence to the rotation.", 'owner');
+    }, [], "Adds a presence to the rotation.", 'owner');
 
     cmd.createGlobalCommand(prefix + 'shutdown', (msg) => {
         msg.reply('Shutting down...').finally(() => {
@@ -66,7 +67,7 @@ function registerCommands() {
                 process.exit(0);
             });
         });
-    },[], "Shuts the bot down.", 'owner');
+    }, [], "Shuts the bot down.", 'owner');
 
     cmd.createGlobalCommand(prefix + 'rotate', () => {
         try {
