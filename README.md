@@ -3,6 +3,8 @@ discordbot
 
 A bot that does the discord thing.
 
+`node bot.js --token=DICORDBOTTOKEN --ytapi=YOUTUBEAPIKEY`
+
 Ideas
 ---
 - an instance (class) of the bot for each server
