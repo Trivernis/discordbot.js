@@ -1,7 +1,6 @@
 const Discord = require("discord.js"),
     fs = require('fs'),
     logger = require('./lib/logging').getLogger(),
-    music = require('./lib/music'),
     cmd = require("./lib/cmd"),
     guilding = require('./lib/guilding'),
     client = new Discord.Client(),
@@ -10,26 +9,14 @@ const Discord = require("discord.js"),
     prefix = args.prefix || '~',
     gamepresence = args.game || 'NieR:Automata';
 
-let savedplaylists = {};
-
 function main() {
-    music.setLogger(logger);
     cmd.setLogger(logger);
+    guilding.setLogger(logger);
     cmd.init(prefix);
-    if (fs.existsSync('./data/savedplaylists.json')) {
-        savedplaylists = JSON.parse(fs.readFileSync('./data/savedplaylists.json'))
-    }
     registerCommands();
     client.login(authToken).then(()=> {
         logger.debug("Logged in");
     });
-}
-
-function savePlaylist(url, name) {
-    savedplaylists[name] = url;
-    fs.writeFile('./data/savedplaylists.json',JSON.stringify(savedplaylists), (err) => {
-        if (err) logger.warn(JSON.stringify(err));
-    })
 }
 
 function registerCommands() {
@@ -40,14 +27,7 @@ function registerCommands() {
     cmd.createGlobalCommand(prefix + 'repeatafterme', (msg, argv, args) => {
         return args.join(' ');
     },[], "Repeats what you say");
-
-    cmd.createGlobalCommand(prefix + 'save', (msg, argv) => {
-        savePlaylist(argv['url'], argv['name']);
-        return `Saved song/playlist as ${argv['name']}`
-    }, ['url', 'name'], "Saves the YouTube song/playlist with a specific name");
 }
-
-// defining the client's handlers
 
 client.on('ready', () => {
     logger.info(`logged in as ${client.user.tag}!`);
