@@ -1,0 +1,9 @@
+{
+  "utils": {
+    "help": {
+      "name": "help",
+      "permission": "all",
+      "description": "Shows this help command"
+    }
+  }
+}

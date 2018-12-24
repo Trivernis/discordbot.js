@@ -4,11 +4,12 @@ const Discord = require("discord.js"),
     cmd = require("./lib/cmd"),
     guilding = require('./lib/guilding'),
     utils = require('./lib/utils'),
+    config = require('./config.json'),
     client = new Discord.Client(),
     args = require('args-parser')(process.argv),
-    authToken = args.token,
-    prefix = args.prefix || '~',
-    gamepresence = args.game || prefix + 'help';
+    authToken = args.token || config.token,
+    prefix = args.prefix || config.prefix,
+    gamepresence = args.game || config.presence;
 
 let presences = [],
     rotator = null;
@@ -31,7 +32,7 @@ function main() {
                 lineReader.on('line', (line) => {
                     presences.push(line);
                 });
-                rotator = setInterval(() => rotatePresence(), 60000);
+                rotator = client.setInterval(() => rotatePresence(), config.presence_duration);
             }
         })
     });
@@ -43,14 +44,12 @@ function main() {
 }
 
 function registerCommands() {
-    cmd.createGlobalCommand(prefix + 'ping', () => {
-        return 'Pong!';
-    }, [], "Try it yourself.");
-
+    // useless test command
     cmd.createGlobalCommand(prefix + 'repeatafterme', (msg, argv, args) => {
         return args.join(' ');
     }, [], "Repeats what you say");
 
+    // adds a presence that will be saved in the presence file and added to the rotation
     cmd.createGlobalCommand(prefix + 'addpresence', (msg, argv, args) => {
         let p = args.join(' ');
         presences.push(p);
@@ -59,6 +58,7 @@ function registerCommands() {
         return `Added Presence \`${p}\``;
     }, [], "Adds a presence to the rotation.", 'owner');
 
+    // shuts down the bot after destroying the client
     cmd.createGlobalCommand(prefix + 'shutdown', (msg) => {
         msg.reply('Shutting down...').finally(() => {
             logger.debug('Destroying client...');
@@ -69,15 +69,31 @@ function registerCommands() {
         });
     }, [], "Shuts the bot down.", 'owner');
 
+    // forces a presence rotation
     cmd.createGlobalCommand(prefix + 'rotate', () => {
         try {
-            clearInterval(rotator);
+            client.clearInterval(rotator);
             rotatePresence();
-            rotator = setInterval(() => rotatePresence(), 60000);
+            rotator = client.setInterval(() => rotatePresence(), config.presence_duration);
         } catch (error) {
             logger.warn(JSON.stringify(error));
         }
     }, [], 'Force presence rotation', 'owner');
+
+    // ping command that returns the ping attribute of the client
+    cmd.createGlobalCommand(prefix + 'ping', () => {
+        return `Current average ping: \`${client.ping} ms\``;
+    }, [], 'Returns the current average ping', 'owner');
+
+    // returns the time the bot is running
+    cmd.createGlobalCommand(prefix + 'uptime', () => {
+        return `Uptime: \`${client.uptime/1000} s\``
+    }, [], 'Returns the uptime of the bot', 'owner');
+
+    // returns the numbe of guilds, the bot has joined
+    cmd.createGlobalCommand(prefix + 'guilds', () => {
+        return `Number of guilds: \`${client.guilds.size}\``
+    }, [], 'Returns the uptime of the bot', 'owner');
 }
 
 function rotatePresence() {
