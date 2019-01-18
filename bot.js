@@ -39,8 +39,6 @@ function main() {
     client.login(authToken).then(() => {
         logger.debug("Logged in");
     });
-
-
 }
 
 function registerCommands() {
@@ -87,7 +85,7 @@ function registerCommands() {
 
     // returns the time the bot is running
     cmd.createGlobalCommand(prefix + 'uptime', () => {
-        return `Uptime: \`${client.uptime/1000} s\``
+        return `Uptime: \`${client.uptime / 1000} s\``
     }, [], 'Returns the uptime of the bot', 'owner');
 
     // returns the numbe of guilds, the bot has joined
