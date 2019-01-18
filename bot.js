@@ -16,6 +16,7 @@ let presences = [],
 
 function main() {
     utils.Cleanup(() => {
+        guilding.destroyAll();
         client.destroy();
     });
     cmd.setLogger(logger);
