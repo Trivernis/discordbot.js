@@ -23,10 +23,18 @@ The arguments are optional because the token and youtube-api-key that the bot ne
 }
 ```
 
+Features
+---
+
+At the moment the bot can...
+- [x] ...play music (YouTube videos and playlists)
+- [x] ...save songs/playlists with a given name
+- [x] ...log stuff in a database
+- [ ] ...transform into a cow
+
 Ideas
 ---
 - command replies saved in file (server specific file and global file)
 - reddit api
 - anilist api
 - othercoolstuff api
-- SQLIITE Server-Data Storage

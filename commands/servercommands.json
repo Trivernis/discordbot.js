@@ -114,15 +114,17 @@
       "name": "save",
       "permission": "dj",
       "args": [
-        "url",
-        "name"
+        "url"
       ],
       "description": "Saves the YouTube song/playlist with a specific name"
     },
     "saved": {
       "name": "saved",
       "permission": "all",
-      "description": "Prints out all saved playlists."
+      "description": "Prints out all saved playlists.",
+      "response": {
+        "no_saved": "There are no saved songs/playlists :("
+      }
     }
   }
 }
