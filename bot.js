@@ -37,6 +37,10 @@ function main() {
             }
         })
     });
+    // log the errors instead of letting the program crash
+    client.on('error', (err) => {
+        logger.error(err.message);
+    });
     client.login(authToken).then(() => {
         logger.debug("Logged in");
     });
