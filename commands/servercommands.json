@@ -3,7 +3,8 @@
     "roles": {
       "name": "roles",
       "permission": "all",
-      "description": "Shows the roles used for commands on the server."
+      "description": "Shows the roles used for commands on the server.",
+      "category": "Utility"
     }
   },
   "music": {
@@ -14,6 +15,7 @@
         "url"
       ],
       "description": "Adds the url to the YouTube video/playlist into the queue.",
+      "category": "Music",
       "response": {
         "success": "Added Song/Playlist to the queue.",
         "failure": "Failed adding Song/Playlist to the queue.",
@@ -28,6 +30,7 @@
         "url"
       ],
       "description": "Adds the url to the YouTube video as next song to the queue.",
+      "category": "Music",
       "response": {
         "success": "Added Song as next Song to the queue.",
         "failure": "Failed adding Song as next Song to the queue.",
@@ -39,6 +42,7 @@
       "name": "join",
       "permission": "all",
       "description": "Joins the VC you are in.",
+      "category": "Music",
       "response": {
         "not_connected": "You are not connected to a Voice Channel."
       }
@@ -47,6 +51,7 @@
       "name": "stop",
       "permission": "dj",
       "description": "Stops playing music and leaves.",
+      "category": "Music",
       "response": {
         "success": "Stopping now..."
       }
@@ -55,6 +60,7 @@
       "name": "pause",
       "permission": "all",
       "description": "Pauses playing.",
+      "category": "Music",
       "response": {
         "success": "Pausing playback."
       }
@@ -63,6 +69,7 @@
       "name": "resume",
       "permission": "all",
       "description": "Resumes playing.",
+      "category": "Music",
       "response": {
         "success": "Resuming playback."
       }
@@ -71,6 +78,7 @@
       "name": "skip",
       "permission": "dj",
       "description": "Skips the current song.",
+      "category": "Music",
       "response": {
         "success": "Skipping to the next song."
       }
@@ -79,6 +87,7 @@
       "name": "clear",
       "permission": "dj",
       "description": "Clears the queue.",
+      "category": "Music",
       "response": {
         "success": "The Queue has been cleared."
       }
@@ -86,17 +95,20 @@
     "playlist": {
       "name": "queue",
       "permission": "all",
-      "description": "Shows the next ten songs."
+      "description": "Shows the next ten songs.",
+      "category": "Music"
     },
     "current": {
       "name": "np",
       "permission": "all",
-      "description": "Shows the currently playing song."
+      "description": "Shows the currently playing song.",
+      "category": "Music"
     },
     "shuffle": {
       "name": "shuffle",
       "permission": "all",
       "description": "Shuffles the playlist.",
+      "category": "Music",
       "response": {
         "success": "The Queue has been shuffled."
       }
@@ -105,6 +117,7 @@
       "name": "repeat",
       "permission": "all",
       "description": "Toggle listening on repeat.",
+      "category": "Music",
       "response": {
         "repeat_true": "Listening on repeat now!",
         "repeat_false": "Not listening on repeat anymore."
@@ -116,12 +129,14 @@
       "args": [
         "url"
       ],
-      "description": "Saves the YouTube song/playlist with a specific name"
+      "description": "Saves the YouTube song/playlist with a specific name",
+      "category": "Music"
     },
     "saved": {
       "name": "saved",
       "permission": "all",
       "description": "Prints out all saved playlists.",
+      "category": "Music",
       "response": {
         "no_saved": "There are no saved songs/playlists :("
       }

@@ -3,7 +3,11 @@
     "help": {
       "name": "help",
       "permission": "all",
-      "description": "Shows this help command"
+      "description": "Shows this help command",
+      "category": "Utility",
+      "args": [
+        "command"
+      ]
     }
   }
 }
