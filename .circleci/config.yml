@@ -35,6 +35,10 @@ jobs:
             - node_modules
           key: v1-dependencies-{{ checksum "package.json" }}
 
+      - run:
+          name: Creating config file
+          command: echo {} >> config.json
+
       # run tests!
       - run:
           name: Testing ./lib/music
