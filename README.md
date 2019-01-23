@@ -1,4 +1,4 @@
-discordbot
+discordbot [![CircleCI](https://circleci.com/gh/Trivernis/discordbot.js.svg?style=svg)](https://circleci.com/gh/Trivernis/discordbot.js) [![CodeFactor](https://www.codefactor.io/repository/github/trivernis/discordbot.js/badge)](https://www.codefactor.io/repository/github/trivernis/discordbot.js)
 ===
 
 A bot that does the discord thing.
