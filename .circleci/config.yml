@@ -43,3 +43,7 @@ jobs:
       - run:
           name: Testing ./lib/music
           command: node ./testscripts/musicTest.js
+
+      - run:
+          name: Testing ./lib/cmd
+          command: node ./testscripts/cmdTest.js

@@ -1,3 +1,11 @@
+exports.mockLogger = {
+    error: (msg) => console.error('error: ', msg),
+    warn: (msg) => console.error('warn: ', msg),
+    info: (msg) => console.log('info: ', msg),
+    verbose: (msg) => console.log('verbose: ', msg),
+    debug: (msg) => console.log('debug: ', msg)
+}
+
 exports.mockDispatcher = {
     pause: () => console.log('Dispatcher.pause();'),
     resume: () => console.log('Dispatcher.resume();'),
