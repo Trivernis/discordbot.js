@@ -23,6 +23,7 @@ function main() {
         console.log(dj.playlist);
         console.log(dj.song);
         dj.clear();
+        process.exit(0);
     });
 }
 
