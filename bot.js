@@ -96,7 +96,7 @@ function registerCommands() {
     // returns the numbe of guilds, the bot has joined
     cmd.createGlobalCommand(prefix + 'guilds', () => {
         return `Number of guilds: \`${client.guilds.size}\``
-    }, [], 'Returns the uptime of the bot', 'owner');
+    }, [], 'Returns the number of guilds the bot has joined', 'owner');
 }
 
 function rotatePresence() {
@@ -120,7 +120,13 @@ client.on('message', msg => {
         logger.verbose(`<${msg.author.tag}>: ${msg.content}`);
         if (!msg.guild) {
             let reply = cmd.parseMessage(msg);
-            if (reply) msg.channel.send(reply);
+            if (reply) {
+                if (reply.isPrototypeOf(Discord.RichEmbed)) {
+                    msg.channel.send('', reply);
+                } else {
+                    msg.channel.send(reply)
+                }
+            }
         } else {
             guilding.getHandler(msg.guild, prefix).handleMessage(msg);
         }
