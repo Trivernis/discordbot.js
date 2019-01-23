@@ -30,6 +30,10 @@ jobs:
           name: Installing dependencies
           command: npm install
 
+      - run:
+          name: installing additional dependencies
+          command: npm install sqlite3
+
       - save_cache:
           paths:
             - node_modules
@@ -43,3 +47,11 @@ jobs:
       - run:
           name: Testing ./lib/music
           command: node ./testscripts/musicTest.js
+
+      - run:
+          name: Testing ./lib/cmd
+          command: node ./testscripts/cmdTest.js
+
+      - run:
+          name: Testing ./lib/guilding
+          command: node ./testscripts/guildingTest.js

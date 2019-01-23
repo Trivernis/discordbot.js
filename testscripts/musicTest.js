@@ -1,15 +1,9 @@
 const music = require('../lib/music.js'),
-    mockclasses = require('./mockobjects.js');
+    mockobjects = require('./mockobjects.js');
 
 function main() {
-    let dj = new music.DJ(mockclasses.mockVoicechannel)
-    music.setLogger({
-        error: () => {},
-        warn: () => {},
-        info: () => {},
-        verbose: () => {},
-        debug: () => {}
-    });
+    let dj = new music.DJ(mockobjects.mockVoicechannel)
+    music.setLogger(mockobjects.mockLogger);
     dj.connect().then(() => {
         console.log('connected', dj.connected);
         dj.playFile('test');
@@ -20,8 +14,8 @@ function main() {
         dj.skip();
         dj.stop();
         dj.shuffle();
-        console.log(dj.playlist);
-        console.log(dj.song);
+        console.log('dj.playlist: ', dj.playlist);
+        console.log('dj.song: ', dj.song);
         dj.clear();
         process.exit(0);
     });
