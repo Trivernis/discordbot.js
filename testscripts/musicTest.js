@@ -4,11 +4,11 @@ const music = require('../lib/music.js'),
 function main() {
     let dj = new music.DJ(mockclasses.mockVoicechannel)
     music.setLogger({
-        error: () => {},
-        warn: () => {},
-        info: () => {},
-        verbose: () => {},
-        debug: () => {}
+        error: (msg) => console.error('error: ', msg),
+        warn: (msg) => console.error('warn: ', msg),
+        info: (msg) => console.log('info: ', msg),
+        verbose: (msg) => console.log('verbose: ', msg),
+        debug: (msg) => console.log('debug: ', msg)
     });
     dj.connect().then(() => {
         console.log('connected', dj.connected);
@@ -20,8 +20,8 @@ function main() {
         dj.skip();
         dj.stop();
         dj.shuffle();
-        console.log(dj.playlist);
-        console.log(dj.song);
+        console.log('dj.playlist: ', dj.playlist);
+        console.log('dj.song: ', dj.song);
         dj.clear();
         process.exit(0);
     });
