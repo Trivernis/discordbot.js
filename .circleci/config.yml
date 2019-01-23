@@ -47,3 +47,7 @@ jobs:
       - run:
           name: Testing ./lib/cmd
           command: node ./testscripts/cmdTest.js
+
+      - run:
+          name: Testing ./lib/guilding
+          command: node ./testscripts/guildingTest.js

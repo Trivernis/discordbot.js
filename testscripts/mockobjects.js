@@ -1,10 +1,11 @@
 exports.mockLogger = {
-    error: (msg) => console.error('error: ', msg),
-    warn: (msg) => console.error('warn: ', msg),
-    info: (msg) => console.log('info: ', msg),
-    verbose: (msg) => console.log('verbose: ', msg),
-    debug: (msg) => console.log('debug: ', msg)
-}
+  error: msg => raise(msg),
+  warn: msg => console.error("warn: ", msg),
+  warning: msg => console.error("warn: ", msg),
+  info: msg => console.log("info: ", msg),
+  verbose: msg => console.log("verbose: ", msg),
+  debug: msg => console.log("debug: ", msg)
+};
 
 exports.mockDispatcher = {
     pause: () => console.log('Dispatcher.pause();'),
@@ -42,5 +43,9 @@ exports.mockVoicechannel = {
     members: {
         size: 10
     },
-    leave: () => console.log('leave();')
+    leave: () => console.log('Voicechannel.leave();')
 };
+
+exports.mockChannel = {
+    send: (msg) => console.log('Send: ', msg)
+}
