@@ -103,7 +103,10 @@
       "name": "np",
       "permission": "all",
       "description": "Shows the currently playing song.",
-      "category": "Music"
+      "category": "Music",
+      "response": {
+        "not_playing": "I'm not playing music at the moment."
+      }
     },
     "shuffle": {
       "name": "shuffle",

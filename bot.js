@@ -11,8 +11,8 @@ const Discord = require("discord.js"),
     prefix = args.prefix || config.prefix,
     gamepresence = args.game || config.presence;
 
-let presences = [],
-    rotator = null;
+let presences = [],     // loaded from presences.txt file if the file exists
+    rotator = null;     // an interval id to stop presence duration if needed
 
 function main() {
     utils.Cleanup(() => {
@@ -23,6 +23,7 @@ function main() {
     guilding.setLogger(logger);
     cmd.init(prefix);
     registerCommands();
+
     utils.dirExistence('./data', () => {
         fs.exists('./data/presences.txt', (exist) => {
             if (exist) {
@@ -37,15 +38,16 @@ function main() {
             }
         })
     });
-    // log the errors instead of letting the program crash
-    client.on('error', (err) => {
-        logger.error(err.message);
-    });
+    registerCallbacks();
+
     client.login(authToken).then(() => {
         logger.debug("Logged in");
     });
 }
 
+/**
+ * registeres global commands
+ */
 function registerCommands() {
     // useless test command
     cmd.createGlobalCommand(prefix + 'repeatafterme', (msg, argv, args) => {
@@ -106,34 +108,59 @@ function rotatePresence() {
     logger.debug(`Presence rotation to ${pr}`);
 }
 
-client.on('ready', () => {
-    logger.info(`logged in as ${client.user.tag}!`);
-    client.user.setPresence({game: {name: gamepresence, type: "PLAYING"}, status: 'online'});
-});
-
-client.on('message', msg => {
-    try {
-        if (msg.author === client.user) {
-            logger.verbose(`ME: ${msg.content}`);
-            return;
-        }
-        logger.verbose(`<${msg.author.tag}>: ${msg.content}`);
-        if (!msg.guild) {
-            let reply = cmd.parseMessage(msg);
-            if (reply) {
-                if (reply.isPrototypeOf(Discord.RichEmbed)) {
-                    msg.channel.send('', reply);
-                } else {
-                    msg.channel.send(reply)
-                }
-            }
+/**
+ * Sends the answer recieved from the commands callback.
+ * Handles the sending differently depending on the type of the callback return
+ * @param msg
+ * @param answer
+ */
+function answerMessage(msg, answer) {
+    if (answer instanceof Promise || answer) {
+        if (answer instanceof Discord.RichEmbed) {
+            (this.mention)? msg.reply('', answer) : msg.channel.send('', answer);
+        } else if (answer instanceof Promise) {
+            answer
+                .then((answer) => answerMessage(msg, answer))
+                .catch((error) => answerMessage(msg, error));
         } else {
-            guilding.getHandler(msg.guild, prefix).handleMessage(msg);
+            (this.mention)? msg.reply(answer) : msg.channel.send(answer);
         }
-    } catch (err) {
-        logger.error(err.stack);
+    } else {
+        logger.warn(`Empty answer won't be send.`);
     }
-});
+}
+
+/**
+ * Registeres callbacks for client events
+ */
+function registerCallbacks() {
+    client.on('error', (err) => {
+        logger.error(err.message);
+    });
+
+    client.on('ready', () => {
+        logger.info(`logged in as ${client.user.tag}!`);
+        client.user.setPresence({game: {name: gamepresence, type: "PLAYING"}, status: 'online'});
+    });
+
+    client.on('message', msg => {
+        try {
+            if (msg.author === client.user) {
+                logger.verbose(`ME: ${msg.content}`);
+                return;
+            }
+            logger.verbose(`<${msg.author.tag}>: ${msg.content}`);
+            if (!msg.guild) {
+                let reply = cmd.parseMessage(msg);
+                answerMessage(msg, reply);
+            } else {
+                guilding.getHandler(msg.guild, prefix).handleMessage(msg);
+            }
+        } catch (err) {
+            logger.error(err.stack);
+        }
+    });
+}
 
 // Executing the main function
 if (typeof require !== 'undefined' && require.main === module) {
