@@ -1,4 +1,4 @@
-discordbot [![CircleCI](https://circleci.com/gh/Trivernis/discordbot.js.svg?style=svg)](https://circleci.com/gh/Trivernis/discordbot.js) [![CodeFactor](https://www.codefactor.io/repository/github/trivernis/discordbot.js/badge)](https://www.codefactor.io/repository/github/trivernis/discordbot.js)
+discordbot [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg?style=flat-square)](https://www.gnu.org/licenses/gpl-3.0) [![CircleCI](https://circleci.com/gh/Trivernis/discordbot.js.svg?style=shield)](https://circleci.com/gh/Trivernis/discordbot.js) [![CodeFactor](https://www.codefactor.io/repository/github/trivernis/discordbot.js/badge)](https://www.codefactor.io/repository/github/trivernis/discordbot.js) 
 ===
 
 A bot that does the discord thing.
