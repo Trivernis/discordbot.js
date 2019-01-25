@@ -7,8 +7,8 @@ const Discord = require("discord.js"),
     config = require('./config.json'),
     client = new Discord.Client(),
     args = require('args-parser')(process.argv),
-    authToken = args.token || config.token,
-    prefix = args.prefix || config.prefix,
+    authToken = args.token || config.api.botToken,
+    prefix = args.prefix || config.prefix || '~',
     gamepresence = args.game || config.presence;
 
 let presences = [],     // loaded from presences.txt file if the file exists
@@ -20,6 +20,14 @@ function main() {
         client.destroy();
     });
     cmd.setLogger(logger);
+    let configVerifyer = new utils.ConfigVerifyer(config, [
+        "api.botToken", "api.youTubeApiKey"
+    ]);
+    if (configVerifyer.verifyConfig(logger)) {
+        if (!args.i) {
+            process.exit(1);
+        }
+    }
     guilding.setLogger(logger);
     cmd.init(prefix);
     registerCommands();
