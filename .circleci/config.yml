@@ -45,7 +45,7 @@ jobs:
 
       - run:
           name: Creating config file
-          command: echo {api:{}} >> config.json
+          command: echo {\"api\":{}} >> config.json
 
       # run tests!
       - run:
