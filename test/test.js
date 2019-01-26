@@ -358,10 +358,13 @@ describe('lib/cmd', function() {
 describe('lib/guilding', function() {
     const guilding = rewire('../lib/guilding');
     const servercommands = require('../commands/servercommands');
+    const utils = require('../lib/utils');
     guilding.__set__("sqlite3", null);
     guilding.__set__("utils", {
         dirExistence: (file, callback) => {
-        }
+        },
+        sql: utils.sql,
+        YouTube: utils.YouTube
     });
     guilding.setLogger(mockobjects.mockLogger);
 

@@ -7,50 +7,114 @@ const Discord = require("discord.js"),
     config = require('./config.json'),
     client = new Discord.Client(),
     args = require('args-parser')(process.argv),
+    sqlite3 = require('sqlite3'),
     authToken = args.token || config.api.botToken,
     prefix = args.prefix || config.prefix || '~',
     gamepresence = args.game || config.presence;
 
 let presences = [],     // loaded from presences.txt file if the file exists
-    rotator = null;     // an interval id to stop presence duration if needed
+    rotator = null,     // an interval id to stop presence duration if needed
+    maindb = null;
 
 function main() {
+    logger.verbose('Registering cleanup function');
+
     utils.Cleanup(() => {
         guilding.destroyAll();
         client.destroy();
     });
     cmd.setLogger(logger);
+    logger.verbose('Verifying config');
+
     let configVerifyer = new utils.ConfigVerifyer(config, [
         "api.botToken", "api.youTubeApiKey"
     ]);
-    if (configVerifyer.verifyConfig(logger)) {
+    if (!configVerifyer.verifyConfig(logger)) {
         if (!args.i) {
+            logger.info('Invalid config. Exiting');
             process.exit(1);
         }
     }
     guilding.setLogger(logger);
     cmd.init(prefix);
+    logger.verbose('Registering commands');
     registerCommands();
 
+    logger.debug('Checking for ./data/ existence')
     utils.dirExistence('./data', () => {
-        fs.exists('./data/presences.txt', (exist) => {
-            if (exist) {
-                logger.debug('Loading presences from file...');
-                let lineReader = require('readline').createInterface({
-                    input: require('fs').createReadStream('./data/presences.txt')
+        logger.verbose('Connecting to main database');
+        maindb = new sqlite3.Database('./data/main.db', (err) => {
+            if (err) {
+                logger.error(err.message);
+            } else {
+                maindb.run(`${utils.sql.tableExistCreate} presences (
+                    ${utils.sql.pkIdSerial},
+                    text VARCHAR(255) UNIQUE NOT NULL
+                )`, (err) => {
+                    if (err) {
+                        logger.error(err.message);
+                    } else {
+                        logger.debug('Loading presences');
+                        loadPresences();
+                    }
                 });
-                lineReader.on('line', (line) => {
-                    presences.push(line);
-                });
-                rotator = client.setInterval(() => rotatePresence(), config.presence_duration);
             }
-        })
+        });
     });
     registerCallbacks();
 
     client.login(authToken).then(() => {
         logger.debug("Logged in");
     });
+}
+
+/**
+ * If a data/presences.txt exists, it is read and each line is put into the presences array.
+ * Each line is also stored in the main.db database. After the file is completely read, it get's deleted.
+ * Then the data is read from the database and if the presence doesn't exist in the presences array, it get's
+ * pushed in there. If the presences.txt file does not exist, the data is just read from the database. In the end
+ * a rotator is created that rotates the presence every configured duration.
+ */
+function loadPresences() {
+    if(fs.existsSync('./data/presences.txt')) {
+        let lineReader = require('readline').createInterface({
+            input: require('fs').createReadStream('./data/presences.txt')
+        });
+        lineReader.on('line', (line) => {
+            maindb.run('INSERT INTO presences (text) VALUES (?)', [line], (err) => {
+                if(err) {
+                    logger.warn(err.message);
+                }
+            });
+            presences.push(line);
+        });
+        rotator = client.setInterval(() => rotatePresence(), config.presence_duration || 360000);
+        fs.unlink('./data/presences.txt', (err) => {
+            if (err)
+                logger.warn(err.message);
+        });
+        maindb.all('SELECT text FROM presences', (err, rows) => {
+            if (err) {
+                logger.warn(err.message);
+            } else {
+                for(let row of rows) {
+                    if (!row[0] in presences)
+                        presences.push(row.text);
+                }
+            }
+        })
+    } else {
+        maindb.all('SELECT text FROM presences', (err, rows) => {
+            if (err) {
+                logger.warn(err.message);
+            } else {
+                for(let row of rows) {
+                    presences.push(row.text);
+                }
+            }
+            rotator = client.setInterval(() => rotatePresence(), config.presence_duration || 360000);
+        })
+    }
 }
 
 /**
@@ -66,15 +130,20 @@ function registerCommands() {
     cmd.createGlobalCommand(prefix + 'addpresence', (msg, argv, args) => {
         let p = args.join(' ');
         presences.push(p);
-        fs.writeFile('./data/presences.txt', presences.join('\n'), (err) => {
+
+        maindb.run('INSERT INTO presences (text) VALUES (?)', [p], (err) => {
+            if (err)
+                logger.warn(err.message);
         });
         return `Added Presence \`${p}\``;
     }, [], "Adds a presence to the rotation.", 'owner');
 
     // shuts down the bot after destroying the client
     cmd.createGlobalCommand(prefix + 'shutdown', (msg) => {
+
         msg.reply('Shutting down...').finally(() => {
             logger.debug('Destroying client...');
+
             client.destroy().finally(() => {
                 logger.debug(`Exiting Process...`);
                 process.exit(0);

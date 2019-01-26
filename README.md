@@ -45,6 +45,11 @@ At the moment the bot can...
 - [x] ...log stuff in a database
 - [ ] ...transform into a cow
 
+Presences
+---
+
+You can add presences to the bot either by owner command `addpresence` or by providing a presences.txt file in the data directory. Each line represents a presence. <p style='color: f00'> When all lines are loaded by the bot, the file gets deleted.</p>
+
 Ideas
 ---
 - command replies saved in file (server specific file and global file)
