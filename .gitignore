@@ -1,5 +1,6 @@
 .log
 .idea
+.nyc_output
 data
 package-lock.json
 node_modules

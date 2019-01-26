@@ -2,7 +2,9 @@
   "name": "discordbot",
   "version": "1.0.0",
   "scripts": {
-    "start": "node bot.js"
+    "start": "node bot.js",
+    "test": "mocha --exit",
+    "test-unit": "NODE_ENV=test mocha '/**/*.spec.js'"
   },
   "dependencies": {
     "args-parser": "1.1.0",
@@ -15,5 +17,13 @@
     "winston-daily-rotate-file": "3.6.0",
     "youtube-playlist-info": "1.1.2",
     "ytdl-core": "0.29.1"
+  },
+  "devDependencies": {
+    "assert": "^1.4.1",
+    "chai": "^4.2.0",
+    "mocha": "^5.2.0",
+    "nyc": "^13.1.0",
+    "rewire": "^4.0.1",
+    "sinon": "^7.2.3"
   }
 }
