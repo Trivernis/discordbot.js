@@ -1,6 +1,5 @@
 const sinon = require('sinon'),
-    chai = require('chai'),
-    rewiremock = require('rewiremock').default;
+    chai = require('chai');
 
 beforeEach(() => {
    this.sandbox = sinon.createSandbox();
