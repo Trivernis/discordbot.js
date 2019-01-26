@@ -73,3 +73,27 @@ exports.mockCommand = {
         }};
     }
 };
+
+exports.MockDatabase = class {
+    constructor(file, callback) {
+        callback();
+    }
+
+    run(sql, values, callback) {
+        if(callback) {
+            callback();
+        }
+    }
+
+    get() {
+        return null;
+    }
+
+    all() {
+        return null
+    }
+
+    close() {
+        return true;
+    }
+};

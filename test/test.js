@@ -347,3 +347,94 @@ describe('lib/cmd', function() {
         });
     });
 });
+
+describe('lib/guilding', function() {
+    const guilding = rewire('../lib/guilding');
+    guilding.__set__("sqlite3", null);
+    guilding.__set__("utils", {
+        dirExistence: (file, callback) => {
+        }
+    });
+    guilding.setLogger(mockobjects.mockLogger);
+
+    describe('#GuildHandler', function() {
+
+        it('initializes', function() {
+            let gh = new guilding.GuildHandler('test', '');
+            gh.db = new mockobjects.MockDatabase('', ()=>{});
+            gh.createTables();
+            gh.registerMusicCommands();
+            gh.ready = true;
+            assert(gh.ready);
+        });
+
+        it('destroyes itself', function() {
+            let gh = new guilding.GuildHandler('test', '');
+            gh.db = new mockobjects.MockDatabase('', ()=>{});
+            gh.createTables();
+            gh.registerMusicCommands();
+            gh.ready = true;
+            gh.destroy();
+            assert(!gh.dj.conn);
+        });
+
+        it('answers messages', function() {
+            let gh = new guilding.GuildHandler('test', '');
+            gh.db = new mockobjects.MockDatabase('', ()=>{});
+            gh.createTables();
+            gh.registerMusicCommands();
+            gh.ready = true;
+            let msgSpy = sinon.spy();
+            gh.answerMessage({
+                content: 'test',
+                author: {
+                    tag: undefined
+                },
+                reply: msgSpy,
+                channel: {
+                    send: msgSpy
+                }
+            }, 'Answer');
+            assert(msgSpy.called);
+        });
+
+        it('handles messages', function() {
+            let gh = new guilding.GuildHandler('test', '~');
+            gh.db = new mockobjects.MockDatabase('', ()=>{});
+            gh.ready = true;
+            let cbSpy = sinon.spy();
+            gh.servant.createCommand(mockobjects.mockCommand, cbSpy);
+            assert(gh.servant.commands['~test']);
+            gh.handleMessage({
+                content: '~test',
+                author: {
+                    tag: undefined
+                }});
+            assert(cbSpy.called);
+        });
+
+        it('connects and plays', function(done) {
+            const music = rewire('../lib/music');
+            const Readable = require('stream').Readable;
+
+            music.__set__("logger", mockobjects.mockLogger);
+            music.__set__("yttl", (id, cb) => {
+                cb(null, 'test');
+            });
+            music.__set__('ytdl', () => {
+                let s = new Readable();
+                s._read = () => {};
+                s.push('chunkofdataabc');
+                s.push(null);
+                return s;
+            });
+            let gh = new guilding.GuildHandler('test', '~');
+            gh.db = new mockobjects.MockDatabase('', ()=>{});
+            gh.ready = true;
+            gh.dj = new music.DJ(mockobjects.mockVoicechannel);
+            gh.connectAndPlay(mockobjects.mockVoicechannel, 'test', false).then(() => {
+                done();
+            })
+        });
+    });
+});
