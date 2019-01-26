@@ -1,11 +1,29 @@
 const mockobjects = require('./mockobjects.js'),
-    sinon = require('sinon');
-let Discord = require("discord.js"),
+    sinon = require('sinon'),
     assert = require('assert'),
-    config = require('../config.json');
+    rewire = require('rewire');
+let Discord = require("discord.js");
 
 describe('lib/utils', function() {
     const utils = require('../lib/utils.js');
+
+    describe('#getExtension', function() {
+        it('returns the correct extension for a filename', function(done) {
+            assert(utils.getExtension('test.txt') === '.txt');
+            assert(utils.getExtension('test.tar.gz') === '.gz');
+            assert(utils.getExtension('../lib/utils.js') === '.js');
+            assert(utils.getExtension('.gitignore') === '.gitignore');
+            done();
+        });
+
+        it('returns null if the file has no extension or is no file', function(done) {
+            assert(utils.getExtension('filenameisstrange') === null);
+            assert(utils.getExtension('...') === null);
+            assert(utils.getExtension(Object.create({})) === null);
+            assert(utils.getExtension(null) === null);
+            done();
+        });
+    });
 
     describe('#YouTube', function() {
 
@@ -134,35 +152,39 @@ describe('lib/utils', function() {
             let modifiedMockLogger = mockobjects.mockLogger;
             modifiedMockLogger.error = (msg) => {};
             let confVer = new utils.ConfigVerifyer(testObj, ['key1', 'key1.key3']);
-            assert(!confVer.verifyConfig(mockobjects.mockLogger));
+            assert(!confVer.verifyConfig(modifiedMockLogger));
             confVer = new utils.ConfigVerifyer(testObj, ['key1', 'key1.key2', 'key7.key8.0.key9']);
-            assert(!confVer.verifyConfig(mockobjects.mockLogger));
+            assert(!confVer.verifyConfig(modifiedMockLogger));
             done();
         })
     });
 });
 
-// TODO: Repair and activate later
-describe('The dj class', function *() {
-    const music = require('../lib/music');
-    let ytdl = require("ytdl-core");
-    let yttl = require('get-youtube-title');
-    let ypi = require('youtube-playlist-info');
+describe('The dj class', function () {
+    const music = rewire('../lib/music');
+    const Readable = require('stream').Readable;
 
-    let ytdlMock = sinon.mock(ytdl);
-    let yttlMock = sinon.mock(yttl);
-    let ypiMock = sinon.mock(ypi);
-
-    it('connects to a VoiceChannel', function () {
-        let dj = new music.DJ(mockobjects.mockVoicechannel);
-        dj.connect();
-
-        console.log(dj.connected);
-
-        assert(dj.connected);
+    music.__set__("logger", mockobjects.mockLogger);
+    music.__set__("yttl", (id, cb) => {
+        cb(null, 'test');
+    });
+    music.__set__('ytdl', () => {
+        let s = new Readable();
+        s._read = () => {};
+        s.push('chunkofdataabc');
+        s.push(null);
+        return s;
     });
 
-    it('listens on Repeat', function() {
+    it('connects to a VoiceChannel', function (done) {
+        let dj = new music.DJ(mockobjects.mockVoicechannel);
+        dj.connect().then(()=> {
+            assert(dj.connected);
+            done();
+        });
+    });
+
+    it('listens on Repeat', function () {
         let dj = new music.DJ(mockobjects.mockVoicechannel);
         dj.current = {'url': '', 'title': ''};
         dj.listenOnRepeat = true;
@@ -171,20 +193,112 @@ describe('The dj class', function *() {
         assert(dj.queue.length > 0);
     });
 
-    it('plays Files', function () {
+    it('plays Files', function (done) {
 
         let dj = new music.DJ(mockobjects.mockVoicechannel);
-        dj.connect();
-        dj.playFile();
-
-        assert(dj.playing);
+        dj.connect().then(() => {
+            dj.playFile();
+            assert(dj.playing);
+            done();
+        });
     });
 
-    it('plays YouTube urls', function () {
-
+    it('plays YouTube urls', function (done) {
         let dj = new music.DJ(mockobjects.mockVoicechannel);
-        dj.playYouTube('http://www.youtube.com/watch?v=abc');
+        dj.connect().then(() => {
+            dj.playYouTube('http://www.youtube.com/watch?v=ABCDEFGHIJK');
+        });
 
-        assert(dj.playing);
+        setTimeout(() => {
+            assert(dj.playing);
+            done();
+        }, 211);
     });
+
+    it('gets the video name', function (done) {
+        let dj = new music.DJ(mockobjects.mockVoicechannel);
+        dj.getVideoName('http://www.youtube.com/watch?v=ABCDEFGHIJK').then((name) => {
+            assert(name === 'test');
+            done();
+        })
+    });
+
+    it('sets the volume', function(done) {
+        let dj = new music.DJ(mockobjects.mockVoicechannel);
+        dj.connect().then(() => {
+            dj.playFile();
+            dj.setVolume(100);
+            assert(dj.volume === 100);
+            done();
+        })
+    });
+
+    it('pauses playback', function(done) {
+        let dj = new music.DJ(mockobjects.mockVoicechannel);
+        dj.connect().then(() => {
+            dj.playFile();
+            dj.pause();
+            done();
+        })
+    });
+
+    it('resumes playback', function(done) {
+        let dj = new music.DJ(mockobjects.mockVoicechannel);
+        dj.connect().then(() => {
+            dj.playFile();
+            dj.resume();
+            done();
+        })
+    });
+
+    it('stops playback', function(done) {
+        let dj = new music.DJ(mockobjects.mockVoicechannel);
+        dj.connect().then(() => {
+            dj.playFile();
+            assert(dj.playing);
+            dj.stop();
+            assert(!dj.conn && !dj.disp);
+            done();
+        });
+    });
+
+    it('skips songs', function(done) {
+        let dj = new music.DJ(mockobjects.mockVoicechannel);
+        dj.connect().then(() => {
+            dj.playYouTube('http://www.youtube.com/watch?v=ABCDEFGHIJK');
+            dj.playYouTube('http://www.youtube.com/watch?v=ABCDEFGHIJK');
+            dj.playYouTube('http://www.youtube.com/watch?v=ABCDEFGHIJK');
+            dj.playYouTube('http://www.youtube.com/watch?v=ABCDEFGHIJK');
+            dj.skip();
+            dj.skip();
+            done();
+        });
+    });
+
+    it('returns a playlist', function(done) {
+        let dj = new music.DJ(mockobjects.mockVoicechannel);
+        dj.connect().then(() => {
+            dj.queue = [{
+                'title': 'title',
+                'url': 'http://www.youtube.com/watch?v=ABCDEFGHIJK'}, {
+                'title': 'title',
+                'url': 'http://www.youtube.com/watch?v=ABCDEFGHIJK'}];
+            assert(dj.playlist.length > 0);
+            done();
+        });
+    });
+
+    it('clears the queue', function(done) {
+        let dj = new music.DJ(mockobjects.mockVoicechannel);
+        dj.connect().then(() => {
+            dj.queue = [{
+                'title': 'title',
+                'url': 'http://www.youtube.com/watch?v=ABCDEFGHIJK'}, {
+                'title': 'title',
+                'url': 'http://www.youtube.com/watch?v=ABCDEFGHIJK'}];
+            dj.clear();
+            assert(dj.queue.length === 0);
+            done();
+        });
+    })
 });
