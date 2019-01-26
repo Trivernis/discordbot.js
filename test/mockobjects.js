@@ -50,3 +50,26 @@ exports.mockVoicechannel = {
 exports.mockChannel = {
     send: (msg) => console.log('Send: ', msg)
 };
+
+exports.mockCommand = {
+    "name": "test",
+    "permission": "all",
+    "description": "Tests everything",
+    "category": "Test",
+    "response": {
+        "success": "Testing successful"
+    },
+    "textReply": () => {
+        return 'test';
+    },
+    "promiseReply": () => {
+        return new Promise((rs, rj) => {
+            rs('test');
+        });
+    },
+    "richEmbedReply": () => {
+        return {embed: {
+            title: 'rich embed'
+        }};
+    }
+};
