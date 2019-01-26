@@ -3,10 +3,8 @@ const sinon = require('sinon'),
 
 beforeEach(() => {
    this.sandbox = sinon.createSandbox();
-   rewiremock.enable();
 });
 
 afterEach(() => {
     this.sandbox.restore();
-    rewiremock.disable();
 });
