@@ -4,6 +4,14 @@ const mockobjects = require('./mockobjects.js'),
     rewire = require('rewire');
 let Discord = require("discord.js");
 
+mockobjects.mockLogger = {
+    error: () => {},
+    warn: () => {},
+    info: () => {},
+    verbose: () => {},
+    debug: () => {}
+};
+
 describe('lib/utils', function() {
     const utils = require('../lib/utils.js');
 
@@ -210,12 +218,11 @@ describe('lib/music', function() {
             let dj = new music.DJ(mockobjects.mockVoicechannel);
             dj.connect().then(() => {
                 dj.playYouTube('http://www.youtube.com/watch?v=ABCDEFGHIJK');
+                setTimeout(() => {
+                    assert(dj.playing);
+                    done();
+                }, 100);
             });
-
-            setTimeout(() => {
-                assert(dj.playing);
-                done();
-            }, 100);
         });
 
         it('gets the video name', function (done) {
@@ -350,6 +357,7 @@ describe('lib/cmd', function() {
 
 describe('lib/guilding', function() {
     const guilding = rewire('../lib/guilding');
+    const servercommands = require('../commands/servercommands');
     guilding.__set__("sqlite3", null);
     guilding.__set__("utils", {
         dirExistence: (file, callback) => {
@@ -435,6 +443,33 @@ describe('lib/guilding', function() {
             gh.connectAndPlay(mockobjects.mockVoicechannel, 'test', false).then(() => {
                 done();
             })
+        });
+
+        it('handles all servercommands', function() {
+            let gh = new guilding.GuildHandler('test', '~');
+            gh.db = new mockobjects.MockDatabase('', ()=>{});
+            gh.registerMusicCommands();
+            gh.ready = true;
+            let msgSpy = sinon.spy();
+            let msg = {
+                content: 'test',
+                author: {
+                    tag: undefined
+                },
+                reply: msgSpy,
+                channel: {
+                    send: msgSpy
+                }
+            };
+
+            for (let category of Object.keys(servercommands)) {
+                for (let command of Object.keys(servercommands[category])) {
+                    msg.content = '~' + command;
+                    gh.handleMessage(msg);
+                }
+            }
+
+            assert(msgSpy.called);
         });
     });
 });
