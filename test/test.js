@@ -15,6 +15,15 @@ mockobjects.mockLogger = {
 describe('lib/utils', function() {
     const utils = require('../lib/utils.js');
 
+    describe('#getSplitDuration', function() {
+       it('returns an object from milliseconds', function() {
+           assert(utils.getSplitDuration(1000).seconds === 1);
+           assert(utils.getSplitDuration(360000).minutes === 6);
+           assert(utils.getSplitDuration(3600000).hours === 1);
+           assert(utils.getSplitDuration(100).milliseconds === 100);
+       });
+    });
+
     describe('#getExtension', function() {
         it('returns the correct extension for a filename', function(done) {
             assert(utils.getExtension('test.txt') === '.txt');
@@ -295,7 +304,7 @@ describe('lib/music', function() {
                     'url': 'http://www.youtube.com/watch?v=ABCDEFGHIJK'}];
                 assert(dj.playlist.length > 0);
                 done();
-            });
+            }).catch(() => done());
         });
 
         it('clears the queue', function(done) {
@@ -309,7 +318,7 @@ describe('lib/music', function() {
                 dj.clear();
                 assert(dj.queue.length === 0);
                 done();
-            });
+            }).catch(() => done());
         })
     });
 });

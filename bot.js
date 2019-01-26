@@ -169,7 +169,14 @@ function registerCommands() {
 
     // returns the time the bot is running
     cmd.createGlobalCommand(prefix + 'uptime', () => {
-        return `Uptime: \`${client.uptime / 1000} s\``
+        let uptime = utils.getSplitDuration(client.uptime);
+        return new Discord.RichEmbed().setDescription(`
+            **${uptime.days}** days
+            **${uptime.hours}** hours
+            **${uptime.minutes}** minutes
+            **${uptime.seconds}** seconds
+            **${uptime.milliseconds}** milliseconds
+        `).setTitle('Uptime');
     }, [], 'Returns the uptime of the bot', 'owner');
 
     // returns the numbe of guilds, the bot has joined
@@ -178,6 +185,9 @@ function registerCommands() {
     }, [], 'Returns the number of guilds the bot has joined', 'owner');
 }
 
+/**
+ * changes the presence of the bot by using one stored in the presences array
+ */
 function rotatePresence() {
     let pr = presences.shift();
     presences.push(pr);
