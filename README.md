@@ -3,7 +3,7 @@ discordbot [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blu
 
 A bot that does the discord thing.
 
-`node bot.js [--token=<DiscordBotToken>] [--ytapi=<GoogleApiKey>] [--owner=<DiscordTag>] [--prefix=<Char>] [--game=<String>] [-i=<Boolen>]`
+`node bot.node [--token=<DiscordBotToken>] [--ytapi=<GoogleApiKey>] [--owner=<DiscordTag>] [--prefix=<Char>] [--game=<String>] [-i=<Boolen>]`
 
 The arguments are optional because the token and youtube-api-key that the bot needs to run can also be defined in the config.json in the bot's directory:
 ```json5
