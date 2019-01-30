@@ -1,7 +1,8 @@
 exports.mockLogger = {
-  error: msg => raise(msg),
+  error: msg => {
+      throw new Error(msg);
+  },
   warn: msg => console.error("warn: ", msg),
-  warning: msg => console.error("warn: ", msg),
   info: msg => console.log("info: ", msg),
   verbose: msg => console.log("verbose: ", msg),
   debug: msg => console.log("debug: ", msg)
@@ -48,4 +49,51 @@ exports.mockVoicechannel = {
 
 exports.mockChannel = {
     send: (msg) => console.log('Send: ', msg)
-}
+};
+
+exports.mockCommand = {
+    "name": "test",
+    "permission": "all",
+    "description": "Tests everything",
+    "category": "Test",
+    "response": {
+        "success": "Testing successful"
+    },
+    "textReply": () => {
+        return 'test';
+    },
+    "promiseReply": () => {
+        return new Promise((rs, rj) => {
+            rs('test');
+        });
+    },
+    "richEmbedReply": () => {
+        return {embed: {
+            title: 'rich embed'
+        }};
+    }
+};
+
+exports.MockDatabase = class {
+    constructor(file, callback) {
+        callback();
+    }
+
+    run(sql, values, callback) {
+        if(callback) {
+            callback();
+        }
+    }
+
+    get() {
+        return null;
+    }
+
+    all() {
+        return null
+    }
+
+    close() {
+        return true;
+    }
+};
