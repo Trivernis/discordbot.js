@@ -111,7 +111,7 @@ class Bot {
                     logger.warn(err.message);
                 } else {
                     for (let row of rows) {
-                        if (!row[0] in this.presences)
+                        if (!(row[0] in this.presences))
                             this.presences.push(row.text);
                     }
                 }
@@ -277,7 +277,7 @@ class Bot {
         if (!this.guildHandlers[guild.id])
             this.guildHandlers[guild.id] = new guilding.GuildHandler(guild, prefix);
         return this.guildHandlers[guild.id];
-    };
+    }
 }
 
 
