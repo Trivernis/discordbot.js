@@ -9,8 +9,12 @@
   "dependencies": {
     "args-parser": "1.1.0",
     "discord.js": "11.4.2",
+    "eslint-plugin-graphql": "^3.0.1",
+    "express": "^4.16.4",
+    "express-graphql": "^0.7.1",
     "ffmpeg-binaries": "4.0.0",
     "get-youtube-title": "1.0.0",
+    "graphql": "^14.1.1",
     "opusscript": "0.0.6",
     "sqlite3": "4.0.6",
     "winston": "3.2.1",
@@ -25,5 +29,10 @@
     "nyc": "^13.1.0",
     "rewire": "^4.0.1",
     "sinon": "^7.2.3"
+  },
+  "eslintConfig": {
+    "parserOptions": {
+      "sourceType": "script"
+    }
   }
 }

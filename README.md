@@ -21,6 +21,11 @@ The arguments are optional because the token and youtube-api-key that the bot ne
   ],
   "music": {
     "timeout": 300000
+  },
+  "webservice": {     // optional
+    "enabled": true,  // enable the server
+    "port": 8080,     // set the port
+    "graphiql": false // switch the graphiql interface on/off
   }
 }
 ```

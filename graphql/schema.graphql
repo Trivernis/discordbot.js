@@ -1,0 +1,39 @@
+type User {
+    id: String
+    name: String
+    avatar: String
+    bot: Boolean
+    tag: String
+}
+type Role {
+    id: String
+    name: String
+    color: String
+    members: [GuildMember]
+}
+type GuildMember {
+    id: String
+    user: User
+    nickname: String
+    roles: [Role]
+    highestRole: Role
+}
+type Guild {
+    id: String
+    name: String
+    owner: GuildMember
+    members: [GuildMember]
+    roles: [Role]
+    memberCount: Int
+    icon: String
+}
+type Client {
+    guilds(count: Int): [Guild]
+    user: User
+    ping: Float
+    status: Int
+    uptime: Int
+}
+type Query {
+    client: Client
+}

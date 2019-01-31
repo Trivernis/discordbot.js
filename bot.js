@@ -4,6 +4,7 @@ const Discord = require("discord.js"),
     cmd = require("./lib/cmd"),
     guilding = require('./lib/guilding'),
     utils = require('./lib/utils'),
+    webapi = require('./lib/webapi'),
     config = require('./config.json'),
     args = require('args-parser')(process.argv),
     sqlite3 = require('sqlite3'),
@@ -43,6 +44,7 @@ class Bot {
             }
         }
         guilding.setLogger(logger);
+        webapi.setLogger(logger);
         cmd.init(prefix);
         logger.verbose('Registering commands');
         this.registerCommands();
@@ -68,6 +70,15 @@ class Bot {
             });
         });
         this.registerCallbacks();
+
+        if (config.webservice && config.webservice.enabled) {
+            logger.verbose('Creating WebServer');
+            this.webServer = new webapi.WebServer(config.webservice.port || 8080);
+            logger.debug('Setting Reference Objects to webserver');
+            this.webServer.setReferenceObjects({
+                client: this.client
+            });
+        }
     }
 
     start() {
@@ -78,6 +89,10 @@ class Bot {
             }).catch((err) => {
                 reject(err);
             });
+            if (this.webServer){
+                this.webServer.start();
+                logger.info(`WebServer runing on port ${this.webServer.port}`);
+            }
         })
     }
 
