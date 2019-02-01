@@ -1,39 +1,60 @@
 type User {
-    id: String
-    name: String
+    id: ID!
+    discordId: String
+    name: String!
     avatar: String
     bot: Boolean
-    tag: String
+    tag: String!
 }
 type Role {
-    id: String
+    id: ID!
+    discordId: String
     name: String
     color: String
-    members: [GuildMember]
+    members(first: Int = 10, offset: Int = 0, id: String): [GuildMember]
 }
 type GuildMember {
-    id: String
+    id: ID!
+    discordId: String
     user: User
     nickname: String
-    roles: [Role]
+    roles(first: Int = 10, offset: Int = 0, id: String): [Role]
     highestRole: Role
 }
 type Guild {
-    id: String
+    id: ID!
+    discordId: String
     name: String
     owner: GuildMember
-    members: [GuildMember]
-    roles: [Role]
+    members(first: Int = 10, offset: Int = 0, id: String): [GuildMember]
+    roles(first: Int = 10, offset: Int = 0, id: String): [Role]
     memberCount: Int
     icon: String
+    ready: Boolean
+    saved(first: Int = 10, offset: Int = 0, id: String, name: String): [SavedEntry!]
 }
 type Client {
-    guilds(count: Int): [Guild]
+    guilds(first: Int = 10, offset: Int = 0, id: String): [Guild]
     user: User
     ping: Float
     status: Int
     uptime: Int
 }
+type SavedEntry {
+    id: ID!
+    url: String!
+    name: String!
+}
+type LogEntry {
+    id: ID!
+    message: String
+    level: String
+    timestamp: String
+}
 type Query {
     client: Client
+    presences: [String]!
+    config: String
+    prefix: String
+    logs(first: Int, offset: Int = 0, id: String, last: Int = 10): [LogEntry]
 }

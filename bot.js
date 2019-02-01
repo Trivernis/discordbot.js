@@ -4,13 +4,14 @@ const Discord = require("discord.js"),
     cmd = require("./lib/cmd"),
     guilding = require('./lib/guilding'),
     utils = require('./lib/utils'),
-    webapi = require('./lib/webapi'),
     config = require('./config.json'),
     args = require('args-parser')(process.argv),
     sqlite3 = require('sqlite3'),
     authToken = args.token || config.api.botToken,
     prefix = args.prefix || config.prefix || '~',
     gamepresence = args.game || config.presence;
+
+let webapi = null;
 
 class Bot {
     constructor() {
@@ -44,11 +45,11 @@ class Bot {
             }
         }
         guilding.setLogger(logger);
-        webapi.setLogger(logger);
         cmd.init(prefix);
         logger.verbose('Registering commands');
         this.registerCommands();
         logger.debug('Checking for ./data/ existence');
+
         utils.dirExistence('./data', () => {
             logger.verbose('Connecting to main database');
             this.maindb = new sqlite3.Database('./data/main.db', (err) => {
@@ -58,7 +59,7 @@ class Bot {
                     this.maindb.run(`${utils.sql.tableExistCreate} presences (
                     ${utils.sql.pkIdSerial},
                     text VARCHAR(255) UNIQUE NOT NULL
-                )`, (err) => {
+                    )`, (err) => {
                         if (err) {
                             logger.error(err.message);
                         } else {
@@ -72,15 +73,27 @@ class Bot {
         this.registerCallbacks();
 
         if (config.webservice && config.webservice.enabled) {
+            logger.verbose('Importing webapi');
+            webapi = require('./lib/webapi');
+            webapi.setLogger(logger);
             logger.verbose('Creating WebServer');
             this.webServer = new webapi.WebServer(config.webservice.port || 8080);
             logger.debug('Setting Reference Objects to webserver');
+
             this.webServer.setReferenceObjects({
-                client: this.client
+                client: this.client,
+                presences: this.presences,
+                maind: this.maindb,
+                prefix: prefix,
+                getGuildHandler: (guild) => this.getGuildHandler(guild, prefix)
             });
         }
     }
 
+    /**
+     * Starting the bot by connecting to the discord service and starting the webservice.
+     * @returns {Promise<any>}
+     */
     start() {
         return new Promise((resolve, reject) => {
             this.client.login(authToken).then(() => {
@@ -89,7 +102,7 @@ class Bot {
             }).catch((err) => {
                 reject(err);
             });
-            if (this.webServer){
+            if (this.webServer) {
                 this.webServer.start();
                 logger.info(`WebServer runing on port ${this.webServer.port}`);
             }
@@ -116,7 +129,8 @@ class Bot {
                 });
                 this.presences.push(line);
             });
-            this.rotator = this.client.setInterval(() => this.rotatePresence(), config.presence_duration || 360000);
+            this.rotator = this.client.setInterval(() => this.rotatePresence(),
+                config.presence_duration || 360000);
             fs.unlink('./data/presences.txt', (err) => {
                 if (err)
                     logger.warn(err.message);
@@ -140,7 +154,8 @@ class Bot {
                         this.presences.push(row.text);
                     }
                 }
-                this.rotator = this.client.setInterval(() => this.rotatePresence(), config.presence_duration || 360000);
+                this.rotator = this.client.setInterval(() => this.rotatePresence(),
+                    config.presence_duration || 360000);
             })
         }
     }
@@ -219,8 +234,10 @@ class Bot {
     rotatePresence() {
         let pr = this.presences.shift();
         this.presences.push(pr);
-        this.client.user.setPresence({game: {name: `${gamepresence} | ${pr}`, type: "PLAYING"}, status: 'online'});
-        logger.debug(`Presence rotation to ${pr}`);
+        this.client.user.setPresence({
+            game: {name: `${gamepresence} | ${pr}`, type: "PLAYING"},
+            status: 'online'
+        }).then(() => logger.debug(`Presence rotation to ${pr}`));
     }
 
 
@@ -234,7 +251,11 @@ class Bot {
 
         this.client.on('ready', () => {
             logger.info(`logged in as ${this.client.user.tag}!`);
-            this.client.user.setPresence({game: {name: gamepresence, type: "PLAYING"}, status: 'online'})
+            this.client.user.setPresence({
+                game: {
+                    name: gamepresence, type: "PLAYING"
+                }, status: 'online'
+            })
                 .catch((err) => {
                     if (err)
                         logger.warn(err.message);
