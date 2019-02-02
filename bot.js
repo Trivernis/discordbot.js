@@ -327,7 +327,7 @@ class Bot {
                 (this.mention) ? msg.reply(answer) : msg.channel.send(answer);
             }
         } else {
-            logger.warn(`Empty answer won't be send.`);
+            logger.verbose(`Empty answer won't be send.`);
         }
     }
 

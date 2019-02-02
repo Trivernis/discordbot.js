@@ -25,9 +25,11 @@ body
   margin: 0 auto
   text-align: center
   max-height: 100vh
+  height: 100%
 
 .cell
-  //display: table-cell
+  display: list-item
+  list-style: none
   align-content: center
   text-align: center
   margin: auto
@@ -112,6 +114,28 @@ div.cell > *
   width: 50%
   display: table-cell
 
+.songEntry
+  display: flex
+  background: lighten($cBackgroundVariant, 5)
+  padding: 2px
+  margin: 5px
+  border-radius: 5px
+
+.songEntry > *
+  display: table-column
+  margin: auto
+
+.songEntry img
+  max-height: 30px
+  max-width: 20%
+  height: auto
+  width: auto
+
+.songEntry a
+  width: 80%
+  text-decoration: none
+  color: $cPrimary
+
 #content
   display: flex
   height: 100%
@@ -164,3 +188,43 @@ div.cell > *
   background: darken($cBackground, 3)
   word-wrap: break-word
   display: none
+
+#guild-select
+  background: $cBackgroundVariant
+  color: $cPrimary
+  font-size: 150%
+  font-family: $fNormal
+  padding: 10px
+  width: 100%
+  margin: auto
+  border: none
+  border-radius: 12px
+  -webkit-appearance: none
+
+#guild-icon-container
+  padding: 10px 0 0 0
+
+#guild-icon
+  max-width: 100px
+  width: 50%
+  height: auto
+  border-radius: 25%
+
+#dj-songinfo
+  text-decoration: none
+  color: $cPrimary
+  padding: 10px
+
+#songinfo-container
+  background-color: $cBackgroundVariant
+  border-radius: 20px
+  padding: 10px
+
+#dj-songname
+  font-weight: bold
+  font-size: 120%
+
+#dj-songImg
+  width: 100%
+  height: auto
+  border-radius: 5%

@@ -1,4 +1,5 @@
 let latestLogs = [];
+let latestSongs = [];
 
 let status = {
     0: 'ready',
@@ -29,7 +30,7 @@ function postQuery(query) {
         $.post({
             url: "/graphql",
             headers: {
-                Authorization: `Bearer ${sessionStorage.apiToken}`
+                Authorization: `Bearer ${localStorage.apiToken}`
             },
             data: JSON.stringify({
                 query: query
@@ -55,6 +56,121 @@ function queryStatic() {
         document.querySelector('#user-tag').innerText = d.client.user.tag;
         document.querySelector('#bot-config').innerText = d.config;
     })
+}
+
+function queryGuilds() {
+    let query = `{
+                client {
+                    guilds {
+                        id
+                        name
+                        dj {
+                            playing
+                        }
+                    }
+                }
+            }`;
+    postQuery(query).then((res) => {
+        for (let guild of res.data.client.guilds) {
+            let option = document.createElement('option');
+            option.setAttribute('value', guild.id);
+            option.innerText = guild.dj.playing? guild.name + ' 🎶' : guild.name;
+            let guildSelect = document.querySelector('#guild-select');
+            guildSelect.appendChild(option);
+        }
+    });
+}
+
+function queryGuild(guildId) {
+    let query = `{
+                client {
+                    guilds(id: "${guildId}") {
+                        name
+                        icon
+                        memberCount
+                        owner {
+                            id
+                            user {
+                                tag
+                            } 
+                        }
+                    }
+                }
+                config
+            }`;
+    postQuery(query).then((res) => {
+        let guild = res.data.client.guilds[0];
+        document.querySelector('#guild-icon').setAttribute('src', guild.icon);
+        document.querySelector('#guild-name').innerText = guild.name;
+        document.querySelector('#guild-owner').innerText = guild.owner.user.tag;
+        document.querySelector('#guild-owner').setAttribute('owner-id', guild.owner.id);
+        document.querySelector('#guild-memberCount').innerText = guild.memberCount;
+        queryGuildStatus(guildId);
+        let serverinfo = $('#guildinfo');
+        if (serverinfo.is(':hidden'))
+            serverinfo.show();
+    });
+}
+
+function queryGuildStatus(guildId) {
+    let query = `{
+                client {
+                    guilds(id: "${guildId}") {
+                        dj {
+                            playing
+                            repeat
+                            voiceChannel
+                            currentSong {
+                                name
+                                url
+                                thumbnail
+                            }
+                            queue(first: 5) {
+                                id
+                                name
+                                url
+                                thumbnail
+                            }
+                        }
+                    }
+                }
+                config
+            }`;
+    postQuery(query).then((res) => {
+        let guild = res.data.client.guilds[0];
+        document.querySelector('#guild-djStatus').innerText = guild.dj.playing? 'playing' : 'idle';
+        document.querySelector('#dj-repeat').innerText = guild.dj.repeat? 'on': 'off';
+        if (guild.dj.playing) {
+            $('#dj-songinfo').show();
+            document.querySelector('#dj-voiceChannel').innerText = guild.dj.voiceChannel;
+            document.querySelector('#dj-songinfo').setAttribute('href', guild.dj.currentSong.url);
+            document.querySelector('#dj-songname').innerText = guild.dj.currentSong.name;
+            document.querySelector('#dj-songImg').setAttribute('src', guild.dj.currentSong.thumbnail);
+            let songContainer = document.querySelector('#dj-songQueue');
+            for (let song of guild.dj.queue) {
+                if ($(`.songEntry[song-id=${song.id}]`).length === 0) {
+                    let songEntry = document.createElement('div');
+                    songEntry.setAttribute('class', 'songEntry');
+                    songEntry.setAttribute('song-id', song.id);
+                    let imageEntry = document.createElement('img');
+                    imageEntry.setAttribute('src', song.thumbnail);
+                    songEntry.appendChild(imageEntry);
+                    let nameEntry = document.createElement('a');
+                    nameEntry.setAttribute('href', song.url);
+                    nameEntry.innerText = song.name;
+                    songEntry.appendChild(nameEntry);
+                    songContainer.appendChild(songEntry);
+                }
+            }
+            let songEntries = $('.songEntry');
+            if (songEntries.length > 5) {
+                document.querySelector('#dj-songQueue').firstElementChild.remove();
+            }
+            let latestSongs = guild.dj.queue;
+        } else {
+            $('#dj-songinfo').hide();
+        }
+    });
 }
 
 function queryStatus() {
@@ -136,13 +252,32 @@ function queryLogs(count) {
 }
 
 function startUpdating() {
-    if (!sessionStorage.apiToken || sessionStorage.apiToken.length < 0) {
-        sessionStorage.apiToken = prompt('Please provide an api token: ');
+    if (!localStorage.apiToken || localStorage.apiToken.length < 0) {
+        localStorage.apiToken = prompt('Please provide an api token: ');
     }
     queryStatic();
-    setInterval(queryStatic, 360000);
+    setInterval(queryStatic, 3600000);
     queryStatus();
     setInterval(queryStatus, 2000);
     queryLogs(50);
     setInterval(queryLogs, 5000);
+    queryGuilds();
+    setInterval(queryGuilds, 60000);
+    setInterval(() => {
+        let gid = $('#guild-select')[0].value;
+        if (gid && gid !== 'select-default')
+            queryGuildStatus(gid);
+    }, 5000);
+    setInterval(() => {
+        let gid = $('#guild-select')[0].value;
+        if (gid && gid !== 'select-default')
+            queryGuild(gid);
+    }, 600000);
+    $('#guild-select').on('change', (ev) => {
+        let fch = document.querySelector('#guild-select').firstElementChild;
+        if (fch.getAttribute('value') === 'select-default')
+            fch.remove();
+        let guildId = ev.target.value;
+        queryGuild(guildId);
+    });
 }
