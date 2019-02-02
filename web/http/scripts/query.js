@@ -72,11 +72,14 @@ function queryGuilds() {
             }`;
     postQuery(query).then((res) => {
         for (let guild of res.data.client.guilds) {
-            let option = document.createElement('option');
-            option.setAttribute('value', guild.id);
-            option.innerText = guild.dj.playing? guild.name + ' 🎶' : guild.name;
-            let guildSelect = document.querySelector('#guild-select');
-            guildSelect.appendChild(option);
+            if ($(`option[value=${guild.id}]`).length === 0) {
+                let option = document.createElement('option');
+                option.setAttribute('value', guild.id);
+                if (guild.dj)
+                    option.innerText = guild.dj.playing? guild.name + ' 🎶' : guild.name;
+                let guildSelect = document.querySelector('#guild-select');
+                guildSelect.appendChild(option);
+            }
         }
     });
 }
