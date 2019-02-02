@@ -31,6 +31,7 @@ The arguments are optional because the token and youtube-api-key that the bot ne
 ```
 
 If the keys are missing from the config file, the bot exits. This behaviour can be deactivated by setting the `-i` commandline flag.
+You need to generate an api-token to access the graphql webservice. You can generate one with the owner-command `tokengen` uses via PM.
 
 Keys
 ---

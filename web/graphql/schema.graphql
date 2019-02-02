@@ -1,3 +1,7 @@
+type Presence {
+    game: String
+    status: String
+}
 type User {
     id: ID!
     discordId: String
@@ -5,6 +9,7 @@ type User {
     avatar: String
     bot: Boolean
     tag: String!
+    presence: Presence
 }
 type Role {
     id: ID!
@@ -21,29 +26,42 @@ type GuildMember {
     roles(first: Int = 10, offset: Int = 0, id: String): [Role]
     highestRole: Role
 }
+type DJ {
+    queue(first: Int = 10, offset: Int = 0, id: String): [MediaEntry]
+    playing: Boolean
+    volume: Float
+    repeat: Boolean
+    currentSong: MediaEntry
+    quality: String
+    voiceChannel: String
+}
 type Guild {
     id: ID!
     discordId: String
     name: String
     owner: GuildMember
+    dj: DJ
     members(first: Int = 10, offset: Int = 0, id: String): [GuildMember]
+    memberCount: Int!
     roles(first: Int = 10, offset: Int = 0, id: String): [Role]
-    memberCount: Int
     icon: String
     ready: Boolean
-    saved(first: Int = 10, offset: Int = 0, id: String, name: String): [SavedEntry!]
+    saved(first: Int = 10, offset: Int = 0, id: String, name: String): [MediaEntry!]
+    savedCount: Int!
 }
 type Client {
     guilds(first: Int = 10, offset: Int = 0, id: String): [Guild]
+    guildCount: Int
     user: User
     ping: Float
     status: Int
     uptime: Int
 }
-type SavedEntry {
+type MediaEntry {
     id: ID!
     url: String!
     name: String!
+    thumbnail: String
 }
 type LogEntry {
     id: ID!
@@ -56,5 +74,5 @@ type Query {
     presences: [String]!
     config: String
     prefix: String
-    logs(first: Int, offset: Int = 0, id: String, last: Int = 10): [LogEntry]
+    logs(first: Int, offset: Int = 0, id: String, last: Int = 10, level: String): [LogEntry]
 }

@@ -14,7 +14,7 @@ const Discord = require("discord.js"),
 let webapi = null;
 
 class Bot {
-    constructor() {
+    constructor(callback) {
         this.client = new Discord.Client();
         this.mention = false;
         this.rotator = null;
@@ -67,27 +67,13 @@ class Bot {
                             this.loadPresences();
                         }
                     });
+                    if (config.webservice && config.webservice.enabled)
+                        this.initializeWebserver();
+                    callback();
                 }
             });
         });
         this.registerCallbacks();
-
-        if (config.webservice && config.webservice.enabled) {
-            logger.verbose('Importing webapi');
-            webapi = require('./lib/webapi');
-            webapi.setLogger(logger);
-            logger.verbose('Creating WebServer');
-            this.webServer = new webapi.WebServer(config.webservice.port || 8080);
-            logger.debug('Setting Reference Objects to webserver');
-
-            this.webServer.setReferenceObjects({
-                client: this.client,
-                presences: this.presences,
-                maind: this.maindb,
-                prefix: prefix,
-                getGuildHandler: (guild) => this.getGuildHandler(guild, prefix)
-            });
-        }
     }
 
     /**
@@ -107,6 +93,26 @@ class Bot {
                 logger.info(`WebServer runing on port ${this.webServer.port}`);
             }
         })
+    }
+
+    /**
+     * initializes the api webserver
+     */
+    initializeWebserver() {
+        logger.verbose('Importing webapi');
+        webapi = require('./lib/webapi');
+        webapi.setLogger(logger);
+        logger.verbose('Creating WebServer');
+        this.webServer = new webapi.WebServer(config.webservice.port || 8080);
+        logger.debug('Setting Reference Objects to webserver');
+
+        this.webServer.setReferenceObjects({
+            client: this.client,
+            presences: this.presences,
+            maindb: this.maindb,
+            prefix: prefix,
+            getGuildHandler: (guild) => this.getGuildHandler(guild, prefix)
+        });
     }
 
     /**
@@ -188,8 +194,11 @@ class Bot {
                 logger.debug('Destroying client...');
 
                 this.client.destroy().finally(() => {
-                    logger.debug(`Exiting Process...`);
-                    process.exit(0);
+                    logger.debug('Exiting server...')
+                    this.webServer.stop().then(() => {
+                        logger.debug(`Exiting Process...`);
+                        process.exit(0);
+                    });
                 });
             });
         }, [], "Shuts the bot down.", 'owner');
@@ -226,6 +235,25 @@ class Bot {
         cmd.createGlobalCommand(prefix + 'guilds', () => {
             return `Number of guilds: \`${this.client.guilds.size}\``
         }, [], 'Returns the number of guilds the bot has joined', 'owner');
+
+        cmd.createGlobalCommand(prefix + 'tokengen', (msg, argv) => {
+            return new Promise((resolve, reject) => {
+                if (msg.guild) {
+                    resolve("It's not save here! Try again via PM.");
+                } else if (argv.username && argv.scope) {
+                    logger.debug(`Creating user entry ${argv.username}, scope: ${argv.scope}`);
+                    this.webServer.generateToken(argv.username, argv.scope).then((token) => {
+                        resolve(`Created entry
+                            username: ${argv.username},
+                            scope: ${argv.scope},
+                            token: ${token}
+                        `);
+                    }).catch((err) => {
+                        reject(err.message);
+                    });
+                }
+            });
+        }, ['username', 'scope'], 'Generates a token for a username and returns it.', 'owner');
     }
 
     /**
@@ -293,8 +321,8 @@ class Bot {
                 (this.mention) ? msg.reply('', answer) : msg.channel.send('', answer);
             } else if (answer instanceof Promise) {
                 answer
-                    .then((answer) => answerMessage(msg, answer))
-                    .catch((error) => answerMessage(msg, error));
+                    .then((answer) => this.answerMessage(msg, answer))
+                    .catch((error) => this.answerMessage(msg, error));
             } else {
                 (this.mention) ? msg.reply(answer) : msg.channel.send(answer);
             }
@@ -320,8 +348,9 @@ class Bot {
 // Executing the main function
 if (typeof require !== 'undefined' && require.main === module) {
     logger.info("Starting up... ");  // log the current date so that the logfile is better to read.
-    let discordBot = new Bot();
-    discordBot.start().catch((err) => {
-        logger.error(err.message);
+    let discordBot = new Bot(() => {
+        discordBot.start().catch((err) => {
+            logger.error(err.message);
+        });
     });
 }

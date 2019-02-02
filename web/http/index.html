@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Dashboard</title>
+	<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+	<link type="text/css" rel="stylesheet" href="sass/style.sass"/>
+	<script type="text/javascript" src="scripts/query.js"></script>
+	<script type="text/javascript" src="http://momentjs.com/downloads/moment.min.js"></script>
+</head>
+<body>
+	<div id="content">
+		<div class="column" id="column-left">
+			<pre class="cell text-left" id="bot-config"></pre>
+			<h2 class="cell">Logs</h2>
+			<div id="log-container" class="listContainer"></div>
+		</div>
+		<div class="column" id="column-middle">
+			<div id="avatar-container">
+				<div id="status-indicator"></div>
+				<img class="cell" id="user-avatar" src="" alt="Avatar"/>
+			</div>
+			<h3 class="cell" id="user-tag"></h3>
+			<h4 class="cell" id="user-game"></h4>
+			<div class="space"></div>
+			<h2 class="cell">Status</h2>
+			<div class="cell">
+				<span class="label text-right">Ping: </span>
+				<span class="text-left" id="client-ping"></span>
+			</div>
+			<div class="cell">
+				<span class="label text-right">Uptime: </span>
+				<span class="text-left" id="client-uptime"></span>
+			</div>
+			<div class="cell">
+				<span class="label text-right">Socket Status: </span>
+				<span class="text-left" id="client-status"></span>
+			</div>
+			<div class="cell">
+				<span class="label text-right">Guild Count: </span>
+				<span class="text-left" id="client-guildCount"></span>
+			</div>
+		</div>
+		<div class="column" id="column-right">
+			<p>right</p>
+		</div>
+	</div>
+	<script>
+		startUpdating();
+	</script>
+</body>
+</html>
