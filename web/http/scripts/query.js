@@ -1,5 +1,4 @@
 let latestLogs = [];
-let latestSongs = [];
 
 let status = {
     0: 'ready',
@@ -48,13 +47,11 @@ function queryStatic() {
                         avatar
                     }
                 }
-                config
             }`;
     postQuery(query).then((res) => {
         let d = res.data;
         document.querySelector('#user-avatar').setAttribute('src', d.client.user.avatar);
         document.querySelector('#user-tag').innerText = d.client.user.tag;
-        document.querySelector('#bot-config').innerText = d.config;
     })
 }
 
@@ -121,13 +118,16 @@ function queryGuildStatus(guildId) {
                     guilds(id: "${guildId}") {
                         dj {
                             playing
+                            connected
                             repeat
                             voiceChannel
+                            songStartTime
                             currentSong {
                                 name
                                 url
-                                thumbnail
+                                thumbnail                                
                             }
+                            queueCount
                             queue(first: 5) {
                                 id
                                 name
@@ -141,37 +141,47 @@ function queryGuildStatus(guildId) {
             }`;
     postQuery(query).then((res) => {
         let guild = res.data.client.guilds[0];
-        document.querySelector('#guild-djStatus').innerText = guild.dj.playing? 'playing' : 'idle';
         document.querySelector('#dj-repeat').innerText = guild.dj.repeat? 'on': 'off';
-        if (guild.dj.playing) {
+        document.querySelector('#guild-djStatus').innerText = guild.dj.connected? 'connected' : 'disconnected';
+        if (guild.dj.connected) {
             $('#dj-songinfo').show();
+            document.querySelector('#guild-djStatus').innerText = guild.dj.playing? 'playing' : 'connected';
             document.querySelector('#dj-voiceChannel').innerText = guild.dj.voiceChannel;
-            document.querySelector('#dj-songinfo').setAttribute('href', guild.dj.currentSong.url);
-            document.querySelector('#dj-songname').innerText = guild.dj.currentSong.name;
-            document.querySelector('#dj-songImg').setAttribute('src', guild.dj.currentSong.thumbnail);
-            let songContainer = document.querySelector('#dj-songQueue');
-            for (let song of guild.dj.queue) {
-                if ($(`.songEntry[song-id=${song.id}]`).length === 0) {
-                    let songEntry = document.createElement('div');
+            let songinfoContainer = $('#dj-songinfo');
+
+            if (guild.dj.playing) {
+                if (songinfoContainer.is(':hidden'))
+                    songinfoContainer.show();
+                document.querySelector('#songinfo-container').setAttribute('href', guild.dj.currentSong.url);
+                document.querySelector('#dj-songname').innerText = guild.dj.currentSong.name;
+                document.querySelector('#dj-songImg').setAttribute('src', guild.dj.currentSong.thumbnail.replace('maxresdefault', 'mqdefault'));
+                let songSd = getSplitDuration(Date.now() - guild.dj.songStartTime);
+                document.querySelector('#dj-songCurrentTS').innerText = `${songSd.minutes}:${songSd.seconds.toString().padStart(2, '0')}`;
+                document.querySelector('#dj-songCurrentTS').setAttribute('start-ts', guild.dj.songStartTime);
+                document.querySelector('#dj-queueCount').innerText = guild.dj.queueCount;
+                let songContainer = document.querySelector('#dj-songQueue');
+                $('.songEntry').remove();
+                for (let song of guild.dj.queue) {
+                    let songEntry = document.createElement('a');
+                    songEntry.setAttribute('href', song.url);
                     songEntry.setAttribute('class', 'songEntry');
                     songEntry.setAttribute('song-id', song.id);
                     let imageEntry = document.createElement('img');
-                    imageEntry.setAttribute('src', song.thumbnail);
+                    imageEntry.setAttribute('src', song.thumbnail.replace('maxresdefault', 'mqdefault'));
                     songEntry.appendChild(imageEntry);
                     let nameEntry = document.createElement('a');
-                    nameEntry.setAttribute('href', song.url);
                     nameEntry.innerText = song.name;
                     songEntry.appendChild(nameEntry);
                     songContainer.appendChild(songEntry);
                 }
+                document.querySelector('#dj-queueDisplayCount').innerText = document.querySelectorAll('.songEntry').length;
+            } else {
+                if (songinfoContainer.is(':not(:hidden)'))
+                    songinfoContainer.hide();
             }
-            let songEntries = $('.songEntry');
-            if (songEntries.length > 5) {
-                document.querySelector('#dj-songQueue').firstElementChild.remove();
-            }
-            let latestSongs = guild.dj.queue;
         } else {
             $('#dj-songinfo').hide();
+            document.querySelector('#dj-voiceChannel').innerText = 'None';
         }
     });
 }
@@ -201,7 +211,11 @@ function queryStatus() {
             .innerText = `${sd.days}d ${sd.hours}h ${sd.minutes}min ${sd.seconds}s`;
 
         document.querySelector('#client-guildCount').innerText = d.client.guildCount;
-        document.querySelector('#status-indicator').setAttribute('status', d.client.user.presence.status);
+        if (d.client.status !== 0) {
+            document.querySelector('#status-indicator').setAttribute('status', 'offline');
+        } else {
+            document.querySelector('#status-indicator').setAttribute('status', d.client.user.presence.status);
+        }
         document.querySelector('#user-game').innerText = d.client.user.presence.game;
 
         setTimeout(() => {
@@ -283,4 +297,8 @@ function startUpdating() {
         let guildId = ev.target.value;
         queryGuild(guildId);
     });
+    setInterval(() => {
+        let songSd = getSplitDuration(Date.now() - $('#dj-songCurrentTS').attr('start-ts'));
+        document.querySelector('#dj-songCurrentTS').innerText = `${songSd.minutes}:${songSd.seconds.toString().padStart(2, '0')}`;
+    }, 500);
 }

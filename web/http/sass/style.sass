@@ -120,6 +120,8 @@ div.cell > *
   padding: 2px
   margin: 5px
   border-radius: 5px
+  text-decoration: none
+  color: $cPrimary
 
 .songEntry > *
   display: table-column
@@ -130,6 +132,7 @@ div.cell > *
   max-width: 20%
   height: auto
   width: auto
+  border-radius: 2px
 
 .songEntry a
   width: 80%
@@ -184,11 +187,6 @@ div.cell > *
 #status-indicator[status=offline]
   background-color: $cOffline
 
-#bot-config
-  background: darken($cBackground, 3)
-  word-wrap: break-word
-  display: none
-
 #guild-select
   background: $cBackgroundVariant
   color: $cPrimary
@@ -211,14 +209,19 @@ div.cell > *
   border-radius: 25%
 
 #dj-songinfo
+  display: block
+  background-color: $cBackgroundVariant
+  border-radius: 20px
+
+#songinfo-container
+  display: list-item
   text-decoration: none
   color: $cPrimary
   padding: 10px
+  width: calc(100% - 20px)
 
-#songinfo-container
-  background-color: $cBackgroundVariant
-  border-radius: 20px
-  padding: 10px
+dj-queue-container
+  display: list-item
 
 #dj-songname
   font-weight: bold

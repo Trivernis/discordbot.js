@@ -28,12 +28,15 @@ type GuildMember {
 }
 type DJ {
     queue(first: Int = 10, offset: Int = 0, id: String): [MediaEntry]
-    playing: Boolean
+    queueCount: Int!
+    songStartTime: String
+    playing: Boolean!
     volume: Float
     repeat: Boolean
     currentSong: MediaEntry
     quality: String
     voiceChannel: String
+    connected: Boolean!
 }
 type Guild {
     id: ID!

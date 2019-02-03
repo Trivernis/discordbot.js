@@ -25,12 +25,13 @@ class Bot {
         logger.verbose('Registering cleanup function');
         utils.Cleanup(() => {
             for (let gh in Object.values(this.guildHandlers)) {
-                if (gh)
+                if (gh instanceof guilding.GuildHandler)
                     gh.destroy();
             }
             this.client.destroy().then(() => {
                 logger.debug('destroyed client');
             });
+            this.maindb.close();
         });
         cmd.setLogger(logger);
         logger.verbose('Verifying config');
@@ -194,9 +195,11 @@ class Bot {
                 logger.debug('Destroying client...');
 
                 this.client.destroy().finally(() => {
-                    logger.debug('Exiting server...')
+                    logger.debug('Exiting server...');
                     this.webServer.stop().then(() => {
                         logger.debug(`Exiting Process...`);
+                        process.exit(0);
+                    }).catch(() => {
                         process.exit(0);
                     });
                 });

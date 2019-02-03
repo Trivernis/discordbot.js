@@ -11,7 +11,6 @@
 <body>
 	<div id="content">
 		<div class="column" id="column-left">
-			<pre class="cell text-left" id="bot-config"></pre>
 			<h2 class="cell">Logs</h2>
 			<div id="log-container" class="listContainer"></div>
 		</div>
@@ -70,18 +69,24 @@
 					<span class="label text-right">Repeat: </span>
 					<span class="text-left" id="dj-repeat"></span>
 				</div>
-				<a class="cell listContainer" id="dj-songinfo" style="display: none">
-					<div class="cell">
-						<span class="label text-right">Voice Channel: </span>
-						<span class="text-left" id="dj-voiceChannel"></span>
-					</div>
-					<div id="songinfo-container">
+				<div class="cell">
+					<span class="label text-right">Voice Channel: </span>
+					<span class="text-left" id="dj-voiceChannel"></span>
+				</div>
+				<div class="cell listContainer" id="dj-songinfo" style="display: none">
+					<a id="songinfo-container">
 						<span id="dj-songname"></span>
 						<img id="dj-songImg" src="" alt=""/>
-						<span style="font-weight: bold">Next 5 Songs</span>
+						<div id="dj-songProgress">
+							<span id="dj-songCurrentTS"></span>
+						</div>
+					</a>
+					<div id="dj-queue-container">
+						<span class="cell label" id="Queue Song count"><span id="dj-queueCount"></span> Songs in Queue</span>
+						<span class="cell">Next <span id="dj-queueDisplayCount">0</span> Songs:</span>
 						<div id="dj-songQueue"></div>
 					</div>
-				</a>
+				</div>
 			</div>
 		</div>
 	</div>
