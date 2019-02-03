@@ -39,41 +39,47 @@
 				<span class="label text-right">Guild Count: </span>
 				<span class="text-left" id="client-guildCount"></span>
 			</div>
+			<div class="cell">
+				<span class="label text-right">Active Voice Connections: </span>
+				<span class="text-left" id="client-vcCount"></span>
+			</div>
 		</div>
 		<div class="column" id="column-right">
 			<select class="cell" id="guild-select">
 				<option value="select-default">-Select a guild-</option>
 			</select>
 			<div id="guildinfo" style="display: none">
-				<div class="cell" id="guild-icon-container">
-					<img id="guild-icon" src="" alt="Icon"/>
-					<div class="listContainer">
-						<h2 class="cell" id="guild-name"></h2>
-						<p class="cell">by</p>
-						<h3 class="cell" id="guild-owner"></h3>
+				<div class="listContainer">
+					<div class="cell" id="guild-icon-container">
+						<img id="guild-icon" src="" alt="Icon"/>
+						<div class="listContainer" id="guild-nameAndIcon">
+							<h2 class="cell" id="guild-name"></h2>
+							<p class="cell">by</p>
+							<h3 class="cell" id="guild-owner"></h3>
+						</div>
+					</div>
+					<div class="space"></div>
+					<h3 class="cell">Stats</h3>
+					<div class="cell">
+						<span class="label text-right">Member Count: </span>
+						<span class="text-left" id="guild-memberCount"></span>
+					</div>
+					<div class="space"></div>
+					<h3 class="cell">DJ</h3>
+					<div class="cell">
+						<span class="label text-right">State: </span>
+						<span class="text-left" id="guild-djStatus"></span>
+					</div>
+					<div class="cell">
+						<span class="label text-right">Repeat: </span>
+						<span class="text-left" id="dj-repeat"></span>
+					</div>
+					<div class="cell">
+						<span class="label text-right">Voice Channel: </span>
+						<span class="text-left" id="dj-voiceChannel"></span>
 					</div>
 				</div>
-				<div class="space"></div>
-				<h3 class="cell">Stats</h3>
-				<div class="cell">
-					<span class="label text-right">Member Count: </span>
-					<span class="text-left" id="guild-memberCount"></span>
-				</div>
-				<div class="space"></div>
-				<h3 class="cell">DJ</h3>
-				<div class="cell">
-					<span class="label text-right">State: </span>
-					<span class="text-left" id="guild-djStatus"></span>
-				</div>
-				<div class="cell">
-					<span class="label text-right">Repeat: </span>
-					<span class="text-left" id="dj-repeat"></span>
-				</div>
-				<div class="cell">
-					<span class="label text-right">Voice Channel: </span>
-					<span class="text-left" id="dj-voiceChannel"></span>
-				</div>
-				<div class="cell listContainer" id="dj-songinfo" style="display: none">
+				<div class="listContainer" id="dj-songinfo" style="display: none">
 					<a id="songinfo-container">
 						<span id="dj-songname"></span>
 						<img id="dj-songImg" src="" alt=""/>

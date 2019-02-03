@@ -55,6 +55,7 @@ type Guild {
 type Client {
     guilds(first: Int = 10, offset: Int = 0, id: String): [Guild]
     guildCount: Int
+    voiceConnectionCount: Int
     user: User
     ping: Float
     status: Int

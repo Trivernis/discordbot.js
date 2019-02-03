@@ -112,7 +112,8 @@ class Bot {
             presences: this.presences,
             maindb: this.maindb,
             prefix: prefix,
-            getGuildHandler: (guild) => this.getGuildHandler(guild, prefix)
+            getGuildHandler: (guild) => this.getGuildHandler(guild, prefix),
+            guildHandlers: this.guildHandlers
         });
     }
 

@@ -193,6 +193,7 @@ function queryStatus() {
                     status
                     uptime
                     guildCount
+                    voiceConnectionCount
                     user {
                         presence {
                             game
@@ -211,6 +212,7 @@ function queryStatus() {
             .innerText = `${sd.days}d ${sd.hours}h ${sd.minutes}min ${sd.seconds}s`;
 
         document.querySelector('#client-guildCount').innerText = d.client.guildCount;
+        document.querySelector('#client-vcCount').innerText = d.client.voiceConnectionCount;
         if (d.client.status !== 0) {
             document.querySelector('#status-indicator').setAttribute('status', 'offline');
         } else {
