@@ -66,9 +66,12 @@ div.cell > *
   display: grid
   width: 100%
   text-align: left
-  overflow: auto
+  overflow: hidden
   position: relative
   max-height: 90vh
+
+.listContainer:hover
+  overflow: auto
 
 .logEntry
   display: list-item
@@ -248,6 +251,9 @@ div.cell > *
 
 #guildinfo
   max-height: 90vh
+  overflow-y: hidden
+  
+#guildinfo:hover
   overflow-y: auto
 
 #dj-songQueue
