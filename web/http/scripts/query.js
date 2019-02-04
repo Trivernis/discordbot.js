@@ -13,13 +13,13 @@ function getSplitDuration (duration) {
     let dur = duration;
     let retObj = {};
     retObj.milliseconds = dur % 1000;
-    dur = Math.round(dur / 1000);
+    dur = Math.floor(dur / 1000);
     retObj.seconds = dur % 60;
-    dur = Math.round(dur / 60);
+    dur = Math.floor(dur / 60);
     retObj.minutes = dur % 60;
-    dur = Math.round(dur / 60);
+    dur = Math.floor(dur / 60);
     retObj.hours = dur % 24;
-    dur = Math.round(dur / 24);
+    dur = Math.floor(dur / 24);
     retObj.days = dur;
     return retObj;
 }
