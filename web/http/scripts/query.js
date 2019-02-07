@@ -36,7 +36,7 @@ function postQuery(query) {
             }),
             contentType: "application/json"
         }).done((res) => resolve(res));
-    })
+    });
 }
 
 function queryStatic() {
@@ -52,7 +52,7 @@ function queryStatic() {
         let d = res.data;
         document.querySelector('#user-avatar').setAttribute('src', d.client.user.avatar);
         document.querySelector('#user-tag').innerText = d.client.user.tag;
-    })
+    });
 }
 
 function queryGuilds() {
@@ -112,6 +112,10 @@ function queryGuild(guildId) {
     });
 }
 
+/**
+ * TODO: Play/Pause as status
+ * @param guildId
+ */
 function queryGuildStatus(guildId) {
     let query = `{
                 client {
@@ -122,6 +126,7 @@ function queryGuildStatus(guildId) {
                             repeat
                             voiceChannel
                             songStartTime
+                            paused
                             currentSong {
                                 name
                                 url
@@ -144,14 +149,16 @@ function queryGuildStatus(guildId) {
         document.querySelector('#dj-repeat').innerText = guild.dj.repeat? 'on': 'off';
         document.querySelector('#guild-djStatus').innerText = guild.dj.connected? 'connected' : 'disconnected';
         if (guild.dj.connected) {
-            $('#dj-songinfo').show();
+            let songinfoContainer = $('#dj-songinfo');
+            songinfoContainer.show();
             document.querySelector('#guild-djStatus').innerText = guild.dj.playing? 'playing' : 'connected';
             document.querySelector('#dj-voiceChannel').innerText = guild.dj.voiceChannel;
-            let songinfoContainer = $('#dj-songinfo');
+
 
             if (guild.dj.playing) {
                 if (songinfoContainer.is(':hidden'))
                     songinfoContainer.show();
+                document.querySelector('#guild-djStatus').innerText = guild.dj.paused? 'paused' : 'playing';
                 document.querySelector('#songinfo-container').setAttribute('href', guild.dj.currentSong.url);
                 document.querySelector('#dj-songname').innerText = guild.dj.currentSong.name;
                 document.querySelector('#dj-songImg').setAttribute('src', guild.dj.currentSong.thumbnail.replace('maxresdefault', 'mqdefault'));
@@ -225,7 +232,7 @@ function queryStatus() {
             document.querySelector('#client-uptime')
                 .innerText = `${sd.days}d ${sd.hours}h ${sd.minutes}min ${sd.seconds}s`;
         }, 1000);
-    })
+    });
 }
 
 function queryLogs(count) {
@@ -267,7 +274,7 @@ function queryLogs(count) {
             }
         }
         latestLogs = d.logs;
-    })
+    });
 }
 
 function startUpdating() {

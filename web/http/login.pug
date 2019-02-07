@@ -1,0 +1,11 @@
+doctype html
+html
+	head
+		link(type='text/css' rel='stylesheet' href='sass/style.sass')
+	body
+		h1 Login
+		h3 #{message}
+		form(action='/' method='POST')
+			input(name='username' type='text' required placeholder='Username')
+			input(name='password' type='password' required placeholder='Password')
+			button(type='submit') Log in

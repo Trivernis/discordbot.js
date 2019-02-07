@@ -1,0 +1,79 @@
+doctype html
+head
+    meta(charset='UTF-8')
+    title Dashboard
+    script(src='https://code.jquery.com/jquery-3.3.1.min.js')
+    script(type='text/javascript' src='https://momentjs.com/downloads/moment.min.js')
+    link(type='text/css' rel='stylesheet' href='sass/style.sass')
+    script(type='text/javascript' src='scripts/query.js')
+#content
+    #column-left.column
+        h2.cell Logs
+        #log-container.listContainer
+    #column-middle.column
+        #avatar-container
+            #status-indicator
+            img#user-avatar.cell(src='' alt='Avatar')
+        h3#user-tag.cell
+        h4#user-game.cell
+        .space
+        h2.cell Status
+        .cell
+            span.label.text-right Ping:
+            span#client-ping.text-left
+        .cell
+            span.label.text-right Uptime:
+            span#client-uptime.text-left
+        .cell
+            span.label.text-right Socket Status:
+            span#client-status.text-left
+        .cell
+            span.label.text-right Guild Count:
+            span#client-guildCount.text-left
+        .cell
+            span.label.text-right Active Voice Connections:
+            span#client-vcCount.text-left
+    #column-right.column
+        select#guild-select.cell
+            option(value='select-default') -Select a guild-
+        #guildinfo(style='display: none')
+            .listContainer
+                #guild-icon-container.cell
+                    img#guild-icon(src='' alt='Icon')
+                    #guild-nameAndIcon.listContainer
+                        h2#guild-name.cell
+                        p.cell by
+                        h3#guild-owner.cell
+                .space
+                h3.cell Stats
+                .cell
+                    span.label.text-right Member Count:
+                    span#guild-memberCount.text-left
+                .space
+                h3.cell DJ
+                .cell
+                    span.label.text-right State:
+                    span#guild-djStatus.text-left
+                .cell
+                    span.label.text-right Repeat:
+                    span#dj-repeat.text-left
+                .cell
+                    span.label.text-right Voice Channel:
+                    span#dj-voiceChannel.text-left
+            #dj-songinfo.listContainer(style='display: none')
+                a#songinfo-container
+                    span#dj-songname
+                    img#dj-songImg(src='' alt='')
+                    #dj-songProgress
+                        span#dj-songCurrentTS
+                #dj-queue-container
+                    span.cell.label(id='Queue Song count')
+                        span#dj-queueCount
+                        |  Songs in Queue
+                    span.cell
+                        | Next
+                        span#dj-queueDisplayCount 0
+                        |  Songs:
+                    #dj-songQueue
+script.
+    startUpdating();

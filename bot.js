@@ -24,12 +24,15 @@ class Bot {
 
         logger.verbose('Registering cleanup function');
         utils.Cleanup(() => {
-            for (let gh in Object.values(this.guildHandlers)) {
+            for (let gh in Object.values(this.guildHandlers))
                 if (gh instanceof guilding.GuildHandler)
                     gh.destroy();
-            }
+
             this.client.destroy().then(() => {
                 logger.debug('destroyed client');
+            }).catch((err) => {
+                logger.error(err.message);
+                logger.debug(err.stack);
             });
             this.maindb.close();
         });
@@ -39,12 +42,12 @@ class Bot {
         let configVerifyer = new utils.ConfigVerifyer(config, [
             "api.botToken", "api.youTubeApiKey"
         ]);
-        if (!configVerifyer.verifyConfig(logger)) {
+        if (!configVerifyer.verifyConfig(logger))
             if (!args.i) {
                 logger.info('Invalid config. Exiting');
                 process.exit(1);
             }
-        }
+
         guilding.setLogger(logger);
         cmd.init(prefix);
         logger.verbose('Registering commands');
@@ -56,6 +59,7 @@ class Bot {
             this.maindb = new sqlite3.Database('./data/main.db', (err) => {
                 if (err) {
                     logger.error(err.message);
+                    logger.debug(err.stack);
                 } else {
                     this.maindb.run(`${utils.sql.tableExistCreate} presences (
                     ${utils.sql.pkIdSerial},
@@ -63,6 +67,7 @@ class Bot {
                     )`, (err) => {
                         if (err) {
                             logger.error(err.message);
+                            logger.debug(err.stack);
                         } else {
                             logger.debug('Loading presences');
                             this.loadPresences();
@@ -93,7 +98,7 @@ class Bot {
                 this.webServer.start();
                 logger.info(`WebServer runing on port ${this.webServer.port}`);
             }
-        })
+        });
     }
 
     /**
@@ -131,9 +136,9 @@ class Bot {
             });
             lineReader.on('line', (line) => {
                 this.maindb.run('INSERT INTO presences (text) VALUES (?)', [line], (err) => {
-                    if (err) {
+                    if (err)
                         logger.warn(err.message);
-                    }
+
                 });
                 this.presences.push(line);
             });
@@ -144,27 +149,27 @@ class Bot {
                     logger.warn(err.message);
             });
             this.maindb.all('SELECT text FROM presences', (err, rows) => {
-                if (err) {
+                if (err)
                     logger.warn(err.message);
-                } else {
-                    for (let row of rows) {
+                 else
+                    for (let row of rows)
                         if (!(row[0] in this.presences))
                             this.presences.push(row.text);
-                    }
-                }
-            })
+
+
+            });
         } else {
             this.maindb.all('SELECT text FROM presences', (err, rows) => {
-                if (err) {
+                if (err)
                     logger.warn(err.message);
-                } else {
-                    for (let row of rows) {
+                 else
+                    for (let row of rows)
                         this.presences.push(row.text);
-                    }
-                }
+
+
                 this.rotator = this.client.setInterval(() => this.rotatePresence(),
                     config.presence_duration || 360000);
-            })
+            });
         }
     }
 
@@ -214,7 +219,7 @@ class Bot {
                 this.rotatePresence();
                 this.rotator = this.client.setInterval(() => this.rotatePresence(), config.presence_duration);
             } catch (error) {
-                logger.warn(JSON.stringify(error));
+                logger.warn(error.message);
             }
         }, [], 'Force presence rotation', 'owner');
 
@@ -237,16 +242,16 @@ class Bot {
 
         // returns the numbe of guilds, the bot has joined
         cmd.createGlobalCommand(prefix + 'guilds', () => {
-            return `Number of guilds: \`${this.client.guilds.size}\``
+            return `Number of guilds: \`${this.client.guilds.size}\``;
         }, [], 'Returns the number of guilds the bot has joined', 'owner');
 
-        cmd.createGlobalCommand(prefix + 'tokengen', (msg, argv) => {
+        cmd.createGlobalCommand(prefix + 'createUser', (msg, argv) => {
             return new Promise((resolve, reject) => {
                 if (msg.guild) {
                     resolve("It's not save here! Try again via PM.");
                 } else if (argv.username && argv.scope) {
                     logger.debug(`Creating user entry ${argv.username}, scope: ${argv.scope}`);
-                    this.webServer.generateToken(argv.username, argv.scope).then((token) => {
+                    this.webServer.createUser(argv.username, argv.password, argv.scope, false).then((token) => {
                         resolve(`Created entry
                             username: ${argv.username},
                             scope: ${argv.scope},
@@ -257,7 +262,7 @@ class Bot {
                     });
                 }
             });
-        }, ['username', 'scope'], 'Generates a token for a username and returns it.', 'owner');
+        }, ['username', 'password', 'scope'], 'Generates a token for a username and returns it.', 'owner');
     }
 
     /**
@@ -279,6 +284,7 @@ class Bot {
     registerCallbacks() {
         this.client.on('error', (err) => {
             logger.error(err.message);
+            logger.debug(err.stack);
         });
 
         this.client.on('ready', () => {
@@ -308,7 +314,8 @@ class Bot {
                     this.getGuildHandler(msg.guild, prefix).handleMessage(msg);
                 }
             } catch (err) {
-                logger.error(err.stack);
+                logger.error(err.message);
+                logger.debug(err.stack);
             }
         });
     }
@@ -320,7 +327,7 @@ class Bot {
      * @param answer
      */
     answerMessage(msg, answer) {
-        if (answer instanceof Promise || answer) {
+        if (answer instanceof Promise || answer)
             if (answer instanceof Discord.RichEmbed) {
                 (this.mention) ? msg.reply('', answer) : msg.channel.send('', answer);
             } else if (answer instanceof Promise) {
@@ -330,9 +337,9 @@ class Bot {
             } else {
                 (this.mention) ? msg.reply(answer) : msg.channel.send(answer);
             }
-        } else {
+         else
             logger.verbose(`Empty answer won't be send.`);
-        }
+
     }
 
     /**
@@ -355,6 +362,7 @@ if (typeof require !== 'undefined' && require.main === module) {
     let discordBot = new Bot(() => {
         discordBot.start().catch((err) => {
             logger.error(err.message);
+            logger.debug(err.stack);
         });
     });
 }

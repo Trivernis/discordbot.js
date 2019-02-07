@@ -54,7 +54,8 @@
       "description": "Stops playing music and leaves.",
       "category": "Music",
       "response": {
-        "success": "Stopping now..."
+        "success": "Stopping now...",
+        "not_playing": "I'm not playing music at the moment."
       }
     },
     "pause": {
@@ -63,7 +64,8 @@
       "description": "Pauses playing.",
       "category": "Music",
       "response": {
-        "success": "Pausing playback."
+        "success": "Pausing playback.",
+        "not_playing": "I'm not playing music at the moment."
       }
     },
     "resume": {
@@ -72,7 +74,8 @@
       "description": "Resumes playing.",
       "category": "Music",
       "response": {
-        "success": "Resuming playback."
+        "success": "Resuming playback.",
+        "not_playing": "I'm not playing music at the moment."
       }
     },
     "skip": {
@@ -81,7 +84,8 @@
       "description": "Skips the current song.",
       "category": "Music",
       "response": {
-        "success": "Skipping to the next song."
+        "success": "Skipping to the next song.",
+        "not_playing": "I'm not playing music at the moment."
       }
     },
     "clear": {

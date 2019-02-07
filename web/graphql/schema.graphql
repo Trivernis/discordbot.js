@@ -37,6 +37,7 @@ type DJ {
     quality: String
     voiceChannel: String
     connected: Boolean!
+    paused: Boolean!
 }
 type Guild {
     id: ID!
