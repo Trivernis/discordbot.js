@@ -135,7 +135,7 @@ describe('lib/utils', function() {
             assert('https://i3.ytimg.com/vi/VIDID/maxresdefault.jpg', getTh4Id(getVid4Id('VIDID')));
             assert('https://i3.ytimg.com/vi/1234/maxresdefault.jpg', getTh4Id(getVid4Id('1234')));
             done();
-        })
+        });
     });
 
     describe('#ConfigVerifyer', function() {
@@ -173,7 +173,7 @@ describe('lib/utils', function() {
             confVer = new utils.ConfigVerifyer(testObj, ['key1', 'key1.key2', 'key7.key8.0.key9']);
             assert(!confVer.verifyConfig(modifiedMockLogger));
             done();
-        })
+        });
     });
 });
 
@@ -239,7 +239,7 @@ describe('lib/music', function() {
             dj.getVideoName('http://www.youtube.com/watch?v=ABCDEFGHIJK').then((name) => {
                 assert(name === 'test');
                 done();
-            })
+            });
         });
 
         it('sets the volume', function(done) {
@@ -249,7 +249,7 @@ describe('lib/music', function() {
                 dj.setVolume(100);
                 assert(dj.volume === 100);
                 done();
-            })
+            });
         });
 
         it('pauses playback', function(done) {
@@ -258,7 +258,7 @@ describe('lib/music', function() {
                 dj.playFile();
                 dj.pause();
                 done();
-            })
+            });
         });
 
         it('resumes playback', function(done) {
@@ -267,7 +267,7 @@ describe('lib/music', function() {
                 dj.playFile();
                 dj.resume();
                 done();
-            })
+            });
         });
 
         it('stops playback', function(done) {
@@ -319,7 +319,7 @@ describe('lib/music', function() {
                 assert(dj.queue.length === 0);
                 done();
             }).catch(() => done());
-        })
+        });
     });
 });
 
@@ -344,7 +344,7 @@ describe('lib/cmd', function() {
             servant.createCommand(mockobjects.mockCommand, mockobjects.mockCommand.textReply);
             assert(servant.commands['test']);
             servant.removeCommand('test');
-            assert(!servant.commands['test'])
+            assert(!servant.commands['test']);
         });
 
         it('parses commands', function() {
@@ -454,7 +454,7 @@ describe('lib/guilding', function() {
             gh.dj = new music.DJ(mockobjects.mockVoicechannel);
             gh.connectAndPlay(mockobjects.mockVoicechannel, 'test', false).then(() => {
                 done();
-            })
+            });
         });
 
         it('handles all servercommands', function() {
@@ -474,12 +474,12 @@ describe('lib/guilding', function() {
                 }
             };
 
-            for (let category of Object.keys(servercommands)) {
+            for (let category of Object.keys(servercommands)) 
                 for (let command of Object.keys(servercommands[category])) {
                     msg.content = '~' + command;
                     gh.handleMessage(msg);
                 }
-            }
+            
 
             assert(msgSpy.called);
         });

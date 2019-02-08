@@ -80,9 +80,9 @@ exports.MockDatabase = class {
     }
 
     run(sql, values, callback) {
-        if(callback) {
+        if(callback) 
             callback();
-        }
+        
     }
 
     get() {
@@ -90,7 +90,7 @@ exports.MockDatabase = class {
     }
 
     all() {
-        return null
+        return null;
     }
 
     close() {
