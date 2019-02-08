@@ -1,3 +1,5 @@
+/* eslint-disable */
+
 let latestLogs = [];
 
 let status = {
@@ -28,9 +30,6 @@ function postQuery(query) {
     return new Promise((resolve) => {
         $.post({
             url: "/graphql",
-            headers: {
-                Authorization: `Bearer ${localStorage.apiToken}`
-            },
             data: JSON.stringify({
                 query: query
             }),
@@ -113,7 +112,6 @@ function queryGuild(guildId) {
 }
 
 /**
- * TODO: Play/Pause as status
  * @param guildId
  */
 function queryGuildStatus(guildId) {
@@ -278,9 +276,6 @@ function queryLogs(count) {
 }
 
 function startUpdating() {
-    if (!localStorage.apiToken || localStorage.apiToken.length < 0)
-        localStorage.apiToken = prompt('Please provide an api token: ');
-
     queryStatic();
     setInterval(queryStatic, 3600000);
     queryStatus();

@@ -11,7 +11,7 @@ const Discord = require("discord.js"),
     prefix = args.prefix || config.prefix || '~',
     gamepresence = args.game || config.presence;
 
-let webapi = null;
+let weblib = null;
 
 class Bot {
     constructor(callback) {
@@ -105,11 +105,11 @@ class Bot {
      * initializes the api webserver
      */
     initializeWebserver() {
-        logger.verbose('Importing webapi');
-        webapi = require('./lib/webapi');
-        webapi.setLogger(logger);
+        logger.verbose('Importing weblib');
+        weblib = require('./lib/weblib');
+        weblib.setLogger(logger);
         logger.verbose('Creating WebServer');
-        this.webServer = new webapi.WebServer(config.webservice.port || 8080);
+        this.webServer = new weblib.WebServer(config.webservice.port || 8080);
         logger.debug('Setting Reference Objects to webserver');
 
         this.webServer.setReferenceObjects({
