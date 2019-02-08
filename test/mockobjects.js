@@ -1,3 +1,4 @@
+/* eslint-disable */
 exports.mockLogger = {
   error: msg => {
       throw new Error(msg);
@@ -80,9 +81,9 @@ exports.MockDatabase = class {
     }
 
     run(sql, values, callback) {
-        if(callback) 
+        if(callback)
             callback();
-        
+
     }
 
     get() {

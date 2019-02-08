@@ -1,3 +1,4 @@
+/* eslint-disable */
 const mockobjects = require('./mockobjects.js'),
     sinon = require('sinon'),
     assert = require('assert'),
@@ -474,12 +475,12 @@ describe('lib/guilding', function() {
                 }
             };
 
-            for (let category of Object.keys(servercommands)) 
+            for (let category of Object.keys(servercommands))
                 for (let command of Object.keys(servercommands[category])) {
                     msg.content = '~' + command;
                     gh.handleMessage(msg);
                 }
-            
+
 
             assert(msgSpy.called);
         });
