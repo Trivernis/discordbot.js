@@ -197,15 +197,24 @@ class Bot {
         // shuts down the bot after destroying the client
         cmd.createGlobalCommand(prefix + 'shutdown', (msg) => {
 
-            msg.reply('Shutting down...').finally(() => {
+            msg.reply('Shutting down...').catch((err) => {
+                logger.error(err.message);
+                logger.debug(err.stack);
+                }).finally(() => {
                 logger.debug('Destroying client...');
 
-                this.client.destroy().finally(() => {
+                this.client.destroy().catch((err) => {
+                    logger.error(err.message);
+                    logger.debug(err.stack);
+                    }).finally(() => {
                     logger.debug('Exiting server...');
+
                     this.webServer.stop().then(() => {
                         logger.debug(`Exiting Process...`);
                         process.exit(0);
-                    }).catch(() => {
+                    }).catch((err) => {
+                        logger.error(err.message);
+                        logger.debug(err.stack);
                         process.exit(0);
                     });
                 });
@@ -251,15 +260,14 @@ class Bot {
                     resolve("It's not save here! Try again via PM.");
                 } else if (argv.username && argv.scope) {
                     logger.debug(`Creating user entry ${argv.username}, scope: ${argv.scope}`);
+
                     this.webServer.createUser(argv.username, argv.password, argv.scope, false).then((token) => {
                         resolve(`Created entry
                             username: ${argv.username},
                             scope: ${argv.scope},
                             token: ${token}
                         `);
-                    }).catch((err) => {
-                        reject(err.message);
-                    });
+                    }).catch((err) => reject(err.message));
                 }
             });
         }, ['username', 'password', 'scope'], 'Generates a token for a username and returns it.', 'owner');
@@ -271,15 +279,17 @@ class Bot {
     rotatePresence() {
         let pr = this.presences.shift();
         this.presences.push(pr);
+
         this.client.user.setPresence({
             game: {name: `${gamepresence} | ${pr}`, type: "PLAYING"},
             status: 'online'
-        }).then(() => logger.debug(`Presence rotation to ${pr}`));
+        }).then(() => logger.debug(`Presence rotation to ${pr}`))
+            .catch((err) =>  logger.warn(err.message));
     }
 
 
     /**
-     * Registeres callbacks for client events
+     * Registeres callbacks for client events message and ready
      */
     registerCallbacks() {
         this.client.on('error', (err) => {

@@ -51,27 +51,49 @@
       "jquery": true,
       "es6": true
     },
-    "extends": ["eslint:recommended", "plugin:promise/recommended"],
+    "extends": [
+      "eslint:recommended",
+      "plugin:promise/recommended"
+    ],
     "rules": {
       "semi": "error",
       "semi-style": [
         "error",
         "last"
       ],
-      "no-async-promise-executer": "warn",
       "no-await-in-loop": "warn",
       "curly": [
         "warn",
         "multi",
         "consistent"
       ],
-      "block-spacing": ["warn", "always"],
-      "array-bracket-newline": ["warn", "consistent"],
-      "camelcase": ["error", {"properties": "always"}],
-      "comma-spacing": ["error", {"after":  true}],
-      "brace-style": ["error", "1tbs"],
+      "block-spacing": [
+        "warn",
+        "always"
+      ],
+      "array-bracket-newline": [
+        "warn",
+        "consistent"
+      ],
+      "camelcase": [
+        "error",
+        {
+          "properties": "always"
+        }
+      ],
+      "comma-spacing": [
+        "error",
+        {
+          "after": true
+        }
+      ],
+      "brace-style": [
+        "error",
+        "1tbs"
+      ],
       "promise/no-promise-in-callback": "off",
-      "promise/always-return": "off"
+      "promise/always-return": "off",
+      "promise/catch-or-return": "off"
     },
     "plugins": [
       "eslint-plugin-graphql",

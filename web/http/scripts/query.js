@@ -68,7 +68,7 @@ function queryGuilds() {
                 }
             }`;
     postQuery(query).then((res) => {
-        for (let guild of res.data.client.guilds) {
+        for (let guild of res.data.client.guilds)
             if ($(`option[value=${guild.id}]`).length === 0) {
                 let option = document.createElement('option');
                 option.setAttribute('value', guild.id);
@@ -77,7 +77,7 @@ function queryGuilds() {
                 let guildSelect = document.querySelector('#guild-select');
                 guildSelect.appendChild(option);
             }
-        }
+
     });
 }
 
@@ -220,11 +220,11 @@ function queryStatus() {
 
         document.querySelector('#client-guildCount').innerText = d.client.guildCount;
         document.querySelector('#client-vcCount').innerText = d.client.voiceConnectionCount;
-        if (d.client.status !== 0) {
+        if (d.client.status !== 0)
             document.querySelector('#status-indicator').setAttribute('status', 'offline');
-        } else {
+         else
             document.querySelector('#status-indicator').setAttribute('status', d.client.user.presence.status);
-        }
+
         document.querySelector('#user-game').innerText = d.client.user.presence.game;
 
         setTimeout(() => {
@@ -247,7 +247,7 @@ function queryLogs(count) {
             }`;
     postQuery(query).then((res) => {
         let d = res.data;
-        for (let logEntry of d.logs) {
+        for (let logEntry of d.logs)
             if (!latestLogs.find((x) => x.id === logEntry.id)) {
                 let entryElem = document.createElement('div');
                 entryElem.setAttribute('class', 'logEntry text-left');
@@ -272,15 +272,15 @@ function queryLogs(count) {
                 let logContainer = document.querySelector('#log-container');
                 logContainer.insertBefore(entryElem, logContainer.firstChild);
             }
-        }
+
         latestLogs = d.logs;
     });
 }
 
 function startUpdating() {
-    if (!localStorage.apiToken || localStorage.apiToken.length < 0) {
+    if (!localStorage.apiToken || localStorage.apiToken.length < 0)
         localStorage.apiToken = prompt('Please provide an api token: ');
-    }
+
     queryStatic();
     setInterval(queryStatic, 3600000);
     queryStatus();
