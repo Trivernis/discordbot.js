@@ -20,7 +20,8 @@ The arguments are optional because the token and youtube-api-key that the bot ne
     "DISCORD NAME"  // specify a list of bot owners that can use the owner commands
   ],
   "music": {
-    "timeout": 300000
+    "timeout": 300000,   // exit timeout after noone is left in the voicechannel
+    "livePuffer": 20000, // the preloaded video length (see ytdl-core module)
   },
   "webservice": {     // optional
     "enabled": true,  // enable the server

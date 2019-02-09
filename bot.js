@@ -306,6 +306,17 @@ class Bot {
                 logger.debug(err.stack);
             }
         });
+
+        this.client.on('voiceStateUpdate', async (oldMember, newMember) => {
+            let gh = await this.getGuildHandler(newMember.guild, prefix);
+            if (newMember.user === this.client.user) {
+                if (newMember.voiceChannel)
+                    gh.dj.updateChannel(newMember.voiceChannel);
+            } else {
+                if (oldMember.voiceChannel === gh.dj.voiceChannel || newMember.voiceChannel === gh.dj.voiceChannel)
+                    gh.dj.checkListeners();
+            }
+        });
     }
 
     /**
