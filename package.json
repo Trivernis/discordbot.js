@@ -8,10 +8,24 @@
   },
   "dependencies": {
     "args-parser": "1.1.0",
+    "body-parser": "1.18.3",
+    "compression": "1.7.3",
+    "connect-sqlite3": "0.9.11",
+    "cors": "2.8.5",
     "discord.js": "11.4.2",
+    "express": "4.16.4",
+    "express-compile-sass": "4.0.0",
+    "express-graphql": "0.7.1",
+    "express-session": "1.15.6",
     "ffmpeg-binaries": "4.0.0",
+    "fs-extra": "^7.0.1",
     "get-youtube-title": "1.0.0",
+    "graphql": "14.1.1",
+    "js-md5": "0.7.3",
+    "js-sha512": "0.8.0",
+    "node-sass": "4.11.0",
     "opusscript": "0.0.6",
+    "pug": "2.0.3",
     "sqlite3": "4.0.6",
     "winston": "3.2.1",
     "winston-daily-rotate-file": "3.6.0",
@@ -24,6 +38,68 @@
     "mocha": "5.2.0",
     "nyc": "13.2.0",
     "rewire": "4.0.1",
-    "sinon": "7.2.3"
+    "sinon": "7.2.3",
+    "eslint-plugin-graphql": "3.0.3",
+    "eslint": "5.13.0",
+    "eslint-plugin-promise": "4.0.1"
+  },
+  "eslintConfig": {
+    "parserOptions": {
+      "ecmaVersion": 2018
+    },
+    "env": {
+      "node": true,
+      "browser": true,
+      "jquery": true,
+      "es6": true
+    },
+    "extends": [
+      "eslint:recommended",
+      "plugin:promise/recommended"
+    ],
+    "rules": {
+      "semi": "error",
+      "semi-style": [
+        "error",
+        "last"
+      ],
+      "no-await-in-loop": "warn",
+      "curly": [
+        "warn",
+        "multi",
+        "consistent"
+      ],
+      "block-spacing": [
+        "warn",
+        "always"
+      ],
+      "array-bracket-newline": [
+        "warn",
+        "consistent"
+      ],
+      "camelcase": [
+        "error",
+        {
+          "properties": "always"
+        }
+      ],
+      "comma-spacing": [
+        "error",
+        {
+          "after": true
+        }
+      ],
+      "brace-style": [
+        "error",
+        "1tbs"
+      ],
+      "promise/no-promise-in-callback": "off",
+      "promise/always-return": "off",
+      "promise/catch-or-return": "off"
+    },
+    "plugins": [
+      "eslint-plugin-graphql",
+      "eslint-plugin-promise"
+    ]
   }
 }

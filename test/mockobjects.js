@@ -1,3 +1,4 @@
+/* eslint-disable */
 exports.mockLogger = {
   error: msg => {
       throw new Error(msg);
@@ -75,22 +76,20 @@ exports.mockCommand = {
 };
 
 exports.MockDatabase = class {
-    constructor(file, callback) {
-        callback();
+    constructor(file) {
     }
 
-    run(sql, values, callback) {
-        if(callback) {
-            callback();
-        }
+    async init() {
+
     }
 
-    get() {
-        return null;
+    async run(sql, values) {
     }
 
-    all() {
-        return null
+    async get() {
+    }
+
+    async all() {
     }
 
     close() {
