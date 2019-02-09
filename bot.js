@@ -6,6 +6,7 @@ const Discord = require("discord.js"),
     utils = require('./lib/utils'),
     config = require('./config.json'),
     args = require('args-parser')(process.argv),
+    waterfall = require('promise-waterfall'),
     sqliteAsync = require('./lib/sqliteAsync'),
     authToken = args.token || config.api.botToken,
     prefix = args.prefix || config.prefix || '~',
@@ -177,7 +178,7 @@ class Bot {
             try {
                 await msg.reply('Shutting down...');
                 logger.debug('Destroying client...');
-            } catch(err) {
+            } catch (err) {
                 logger.error(err.message);
                 logger.debug(err.stack);
             }
@@ -192,7 +193,7 @@ class Bot {
                 await this.webServer.stop();
                 logger.debug(`Exiting Process...`);
                 process.exit(0);
-            } catch(err) {
+            } catch (err) {
                 logger.error(err.message);
                 logger.debug(err.stack);
             }
@@ -261,7 +262,7 @@ class Bot {
             game: {name: `${gamepresence} | ${pr}`, type: "PLAYING"},
             status: 'online'
         }).then(() => logger.debug(`Presence rotation to ${pr}`))
-            .catch((err) =>  logger.warn(err.message));
+            .catch((err) => logger.warn(err.message));
     }
 
 
@@ -325,20 +326,22 @@ class Bot {
      * @param msg
      * @param answer
      */
-    answerMessage(msg, answer) {
-        if (answer instanceof Promise || answer)
-            if (answer instanceof Discord.RichEmbed) {
-                (this.mention) ? msg.reply('', answer) : msg.channel.send('', answer);
-            } else if (answer instanceof Promise) {
-                answer
-                    .then((answer) => this.answerMessage(msg, answer))
-                    .catch((error) => this.answerMessage(msg, error));
-            } else {
-                (this.mention) ? msg.reply(answer) : msg.channel.send(answer);
-            }
-         else
-            logger.verbose(`Empty answer won't be send.`);
-
+    async answerMessage(msg, answer) {
+        if (answer instanceof Discord.RichEmbed) {
+            (this.mention) ? msg.reply('', answer) : msg.channel.send('', answer);
+        } else if (answer instanceof Promise) {
+            let resolvedAnswer = await  answer;
+            await this.answerMessage(msg, resolvedAnswer);
+        } else if (answer instanceof Array) {
+            let answerPromises = [];
+            for (let answerPart of answer)
+                answerPromises.push(async () => await this.answerMessage(msg, answerPart));
+            await waterfall(answerPromises);
+        } else if ({}.toString.call(answer) === '[object Function]') {
+            await this.answerMessage(msg, answer());
+        } else if (answer) {
+            (this.mention) ? msg.reply(answer) : msg.channel.send(answer);
+        }
     }
 
     /**
