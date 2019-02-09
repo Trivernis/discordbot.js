@@ -36,7 +36,8 @@
         "success": "Added Song as next Song to the queue.",
         "failure": "Failed adding Song as next Song to the queue.",
         "url_invalid": "This is not a valid url!",
-        "no_url": "I need an url to a video to play"
+        "no_url": "I need an url to a video to play",
+        "no_voicechannel": "You need to join a voicechannel to do that!"
       }
     },
     "join": {

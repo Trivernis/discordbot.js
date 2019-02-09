@@ -6,8 +6,9 @@ html
 		script(src='https://code.jquery.com/jquery-3.3.1.min.js')
 		script(type='text/javascript' src='scripts/login.js')
 	body
-		h1 Login
-		h3 #{message}
-		input(id='username' name='username' type='text' required placeholder='Username')
-		input(id='password' name='password' type='password' required placeholder='Password')
-		button(type='submit' onclick='login()') Log in
+		.listContainer
+			h1(class='cell') Login
+			h3(class='cell') #{message}
+			input(class='cell' id='username' name='username' type='text' required placeholder='Username' onkeypress=handleSubmit)
+			input(class='cell' id='password' name='password' type='password' required placeholder='Password' onkeypress=handleSubmit)
+			button(class='cell' type='submit' onclick='login()') Log in

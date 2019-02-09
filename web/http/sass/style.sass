@@ -18,6 +18,30 @@ body
     background: lighten($cBackground, 5)
     border-radius: 10px
 
+input
+  color: $cPrimary
+  background: $cBackground
+  border: 2px solid $cPrimary
+  border-radius: 12px
+  padding: 5px
+  margin: auto
+
+input:focus
+  background: $cBackgroundVariant
+
+input::placeholder
+  color: darken($cPrimary, 20)
+
+input.cell
+  margin: 10px auto
+
+button
+  background: $cBackgroundVariant
+  border: none
+  border-radius: 12px
+  color: $cPrimary
+  padding: 10px
+
 .column
   display: table-column
   padding: 20px
@@ -118,29 +142,25 @@ div.cell > *
 
 .songEntry
   display: flex
-  display: flex
   background: lighten($cBackgroundVariant, 5)
   padding: 2px
   margin: 5px
   border-radius: 5px
   text-decoration: none
   color: $cPrimary
-
-.songEntry > *
-  display: table-column
-  margin: auto
-
-.songEntry img
-  max-height: 30px
-  max-width: 20%
-  height: auto
-  width: auto
-  border-radius: 2px
-
-.songEntry a
-  width: 80%
-  text-decoration: none
-  color: $cPrimary
+  > *
+    display: table-column
+    margin: auto
+  img
+    max-height: 30px
+    max-width: 20%
+    height: auto
+    width: auto
+    border-radius: 2px
+  a
+    width: 80%
+    text-decoration: none
+    color: $cPrimary
 
 #content
   display: flex
@@ -239,7 +259,6 @@ div.cell > *
 
 #dj-songname
   font-weight: bold
-  font-weight: bold
   font-size: 120%
 
 #dj-songImg
@@ -252,7 +271,7 @@ div.cell > *
 #guildinfo
   max-height: 90vh
   overflow-y: hidden
-  
+
 #guildinfo:hover
   overflow-y: auto
 

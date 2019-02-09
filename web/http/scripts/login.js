@@ -11,6 +11,16 @@ function login() {
         }),
         contentType: "application/json"
     }).done((res) => {
-        document.write(res);
+        window.location.reload();
     });
 }
+
+function handleSubmit(e) {
+    if (!e)
+        e = window.event;
+    if (e.which === 13) {
+        login();
+    }
+}
+
+window.addEventListener('keydown', handleSubmit, false);
