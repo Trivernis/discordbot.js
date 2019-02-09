@@ -1,15 +1,17 @@
 const Discord = require("discord.js"),
-    fs = require('fs'),
+    fs = require('fs-extra'),
     logger = require('./lib/logging').getLogger(),
     cmd = require("./lib/cmd"),
     guilding = require('./lib/guilding'),
     utils = require('./lib/utils'),
     config = require('./config.json'),
     args = require('args-parser')(process.argv),
-    sqlite3 = require('sqlite3'),
+    sqliteAsync = require('./lib/sqliteAsync'),
     authToken = args.token || config.api.botToken,
     prefix = args.prefix || config.prefix || '~',
     gamepresence = args.game || config.presence;
+
+let weblib = null;
 
 class Bot {
     constructor() {
@@ -20,65 +22,100 @@ class Bot {
         this.presences = [];
         this.guildHandlers = [];
 
-        logger.verbose('Registering cleanup function');
-        utils.Cleanup(() => {
-            for (let gh in Object.values(this.guildHandlers)) {
-                if (gh)
-                    gh.destroy();
-            }
-            this.client.destroy().then(() => {
-                logger.debug('destroyed client');
-            });
-        });
-        cmd.setLogger(logger);
         logger.verbose('Verifying config');
 
         let configVerifyer = new utils.ConfigVerifyer(config, [
             "api.botToken", "api.youTubeApiKey"
         ]);
-        if (!configVerifyer.verifyConfig(logger)) {
+        if (!configVerifyer.verifyConfig(logger))
             if (!args.i) {
                 logger.info('Invalid config. Exiting');
-                process.exit(1);
+                logger.flush().then(() => {
+                    process.exit(1);
+                });
             }
-        }
+        cmd.setLogger(logger);
         guilding.setLogger(logger);
-        cmd.init(prefix);
-        logger.verbose('Registering commands');
-        this.registerCommands();
-        logger.debug('Checking for ./data/ existence');
-        utils.dirExistence('./data', () => {
-            logger.verbose('Connecting to main database');
-            this.maindb = new sqlite3.Database('./data/main.db', (err) => {
-                if (err) {
-                    logger.error(err.message);
-                } else {
-                    this.maindb.run(`${utils.sql.tableExistCreate} presences (
-                    ${utils.sql.pkIdSerial},
-                    text VARCHAR(255) UNIQUE NOT NULL
-                )`, (err) => {
-                        if (err) {
-                            logger.error(err.message);
-                        } else {
-                            logger.debug('Loading presences');
-                            this.loadPresences();
-                        }
-                    });
-                }
-            });
-        });
-        this.registerCallbacks();
     }
 
-    start() {
-        return new Promise((resolve, reject) => {
-            this.client.login(authToken).then(() => {
-                logger.debug("Logged in");
-                resolve();
+    /**
+     * Initializes all services.
+     * @returns {Promise<void>}
+     */
+    async initServices() {
+        logger.verbose('Registering cleanup function');
+        utils.Cleanup(() => {
+            for (let gh in Object.values(this.guildHandlers))
+                if (gh instanceof guilding.GuildHandler)
+                    gh.destroy();
+
+            this.client.destroy().then(() => {
+                logger.debug('destroyed client');
             }).catch((err) => {
-                reject(err);
+                logger.error(err.message);
+                logger.debug(err.stack);
             });
-        })
+            this.maindb.close();
+        });
+        await this.initializeDatabase();
+        if (config.webservice && config.webservice.enabled)
+            await this.initializeWebserver();
+        logger.verbose('Registering commands');
+        this.registerCommands();
+        this.registerCallbacks();
+        cmd.init(prefix);
+    }
+
+    /**
+     * Starting the bot by connecting to the discord service and starting the webservice.
+     * @returns {Promise<any>}
+     */
+    async start() {
+        await this.client.login(authToken);
+        logger.debug("Logged in");
+        if (this.webServer) {
+            this.webServer.start();
+            logger.info(`WebServer runing on port ${this.webServer.port}`);
+        }
+    }
+
+    /**
+     * Initializes the database by checking first for the existence of the data folder.
+     * @returns {Promise<void>}
+     */
+    async initializeDatabase() {
+        logger.debug('Checking for ./data/ existence');
+        await fs.ensureDir('./data');
+        logger.verbose('Connecting to main database');
+        this.maindb = new sqliteAsync.Database('./data/main.db');
+        await this.maindb.init();
+        await this.maindb.run(`${utils.sql.tableExistCreate} presences (
+            ${utils.sql.pkIdSerial},
+            text VARCHAR(255) UNIQUE NOT NULL
+        )`);
+        logger.debug('Loading Presences...');
+        await this.loadPresences();
+    }
+
+    /**
+     * initializes the api webserver
+     */
+    async initializeWebserver() {
+        logger.verbose('Importing weblib');
+        weblib = require('./lib/weblib');
+        weblib.setLogger(logger);
+        logger.verbose('Creating WebServer');
+        this.webServer = new weblib.WebServer(config.webservice.port || 8080);
+        logger.debug('Setting Reference Objects to webserver');
+
+        await this.webServer.setReferenceObjects({
+            client: this.client,
+            presences: this.presences,
+            maindb: this.maindb,
+            prefix: prefix,
+            getGuildHandler: (guild) => this.getGuildHandler(guild, prefix),
+            guildHandlers: this.guildHandlers
+        });
     }
 
     /**
@@ -88,45 +125,32 @@ class Bot {
      * pushed in there. If the presences.txt file does not exist, the data is just read from the database. In the end
      * a rotator is created that rotates the presence every configured duration.
      */
-    loadPresences() {
-        if (fs.existsSync('./data/presences.txt')) {
+    async loadPresences() {
+        if (await fs.pathExists('./data/presences.txt')) {
             let lineReader = require('readline').createInterface({
                 input: require('fs').createReadStream('./data/presences.txt')
             });
             lineReader.on('line', (line) => {
                 this.maindb.run('INSERT INTO presences (text) VALUES (?)', [line], (err) => {
-                    if (err) {
+                    if (err)
                         logger.warn(err.message);
-                    }
+
                 });
                 this.presences.push(line);
             });
-            this.rotator = this.client.setInterval(() => this.rotatePresence(), config.presence_duration || 360000);
-            fs.unlink('./data/presences.txt', (err) => {
-                if (err)
-                    logger.warn(err.message);
-            });
-            this.maindb.all('SELECT text FROM presences', (err, rows) => {
-                if (err) {
-                    logger.warn(err.message);
-                } else {
-                    for (let row of rows) {
-                        if (!(row[0] in this.presences))
-                            this.presences.push(row.text);
-                    }
-                }
-            })
+            this.rotator = this.client.setInterval(() => this.rotatePresence(),
+                config.presence_duration || 360000);
+            await fs.unlink('./data/presences.txt');
+            let rows = await this.maindb.all('SELECT text FROM presences');
+            for (let row of rows)
+                if (!(row[0] in this.presences))
+                    this.presences.push(row.text);
         } else {
-            this.maindb.all('SELECT text FROM presences', (err, rows) => {
-                if (err) {
-                    logger.warn(err.message);
-                } else {
-                    for (let row of rows) {
-                        this.presences.push(row.text);
-                    }
-                }
-                this.rotator = this.client.setInterval(() => this.rotatePresence(), config.presence_duration || 360000);
-            })
+            let rows = await this.maindb.all('SELECT text FROM presences');
+            for (let row of rows)
+                this.presences.push(row.text);
+            this.rotator = this.client.setInterval(() => this.rotatePresence(),
+                config.presence_duration || 360000);
         }
     }
 
@@ -140,28 +164,38 @@ class Bot {
         }, [], "Repeats what you say");
 
         // adds a presence that will be saved in the presence file and added to the rotation
-        cmd.createGlobalCommand(prefix + 'addpresence', (msg, argv, args) => {
+        cmd.createGlobalCommand(prefix + 'addpresence', async (msg, argv, args) => {
             let p = args.join(' ');
             this.presences.push(p);
 
-            this.maindb.run('INSERT INTO presences (text) VALUES (?)', [p], (err) => {
-                if (err)
-                    logger.warn(err.message);
-            });
+            await this.maindb.run('INSERT INTO presences (text) VALUES (?)', [p]);
             return `Added Presence \`${p}\``;
         }, [], "Adds a presence to the rotation.", 'owner');
 
         // shuts down the bot after destroying the client
-        cmd.createGlobalCommand(prefix + 'shutdown', (msg) => {
-
-            msg.reply('Shutting down...').finally(() => {
+        cmd.createGlobalCommand(prefix + 'shutdown', async (msg) => {
+            try {
+                await msg.reply('Shutting down...');
                 logger.debug('Destroying client...');
-
-                this.client.destroy().finally(() => {
-                    logger.debug(`Exiting Process...`);
-                    process.exit(0);
-                });
-            });
+            } catch(err) {
+                logger.error(err.message);
+                logger.debug(err.stack);
+            }
+            try {
+                await this.client.destroy();
+                logger.debug('Exiting server...');
+            } catch (err) {
+                logger.error(err.message);
+                logger.debug(err.stack);
+            }
+            try {
+                await this.webServer.stop();
+                logger.debug(`Exiting Process...`);
+                process.exit(0);
+            } catch(err) {
+                logger.error(err.message);
+                logger.debug(err.stack);
+            }
         }, [], "Shuts the bot down.", 'owner');
 
         // forces a presence rotation
@@ -171,7 +205,7 @@ class Bot {
                 this.rotatePresence();
                 this.rotator = this.client.setInterval(() => this.rotatePresence(), config.presence_duration);
             } catch (error) {
-                logger.warn(JSON.stringify(error));
+                logger.warn(error.message);
             }
         }, [], 'Force presence rotation', 'owner');
 
@@ -194,8 +228,26 @@ class Bot {
 
         // returns the numbe of guilds, the bot has joined
         cmd.createGlobalCommand(prefix + 'guilds', () => {
-            return `Number of guilds: \`${this.client.guilds.size}\``
+            return `Number of guilds: \`${this.client.guilds.size}\``;
         }, [], 'Returns the number of guilds the bot has joined', 'owner');
+
+        cmd.createGlobalCommand(prefix + 'createUser', (msg, argv) => {
+            return new Promise((resolve, reject) => {
+                if (msg.guild) {
+                    resolve("It's not save here! Try again via PM.");
+                } else if (argv.username && argv.scope) {
+                    logger.debug(`Creating user entry ${argv.username}, scope: ${argv.scope}`);
+
+                    this.webServer.createUser(argv.username, argv.password, argv.scope, false).then((token) => {
+                        resolve(`Created entry
+                            username: ${argv.username},
+                            scope: ${argv.scope},
+                            token: ${token}
+                        `);
+                    }).catch((err) => reject(err.message));
+                }
+            });
+        }, ['username', 'password', 'scope'], 'Generates a token for a username and returns it.', 'owner');
     }
 
     /**
@@ -204,29 +256,38 @@ class Bot {
     rotatePresence() {
         let pr = this.presences.shift();
         this.presences.push(pr);
-        this.client.user.setPresence({game: {name: `${gamepresence} | ${pr}`, type: "PLAYING"}, status: 'online'});
-        logger.debug(`Presence rotation to ${pr}`);
+
+        this.client.user.setPresence({
+            game: {name: `${gamepresence} | ${pr}`, type: "PLAYING"},
+            status: 'online'
+        }).then(() => logger.debug(`Presence rotation to ${pr}`))
+            .catch((err) =>  logger.warn(err.message));
     }
 
 
     /**
-     * Registeres callbacks for client events
+     * Registeres callbacks for client events message and ready
      */
     registerCallbacks() {
         this.client.on('error', (err) => {
             logger.error(err.message);
+            logger.debug(err.stack);
         });
 
         this.client.on('ready', () => {
             logger.info(`logged in as ${this.client.user.tag}!`);
-            this.client.user.setPresence({game: {name: gamepresence, type: "PLAYING"}, status: 'online'})
+            this.client.user.setPresence({
+                game: {
+                    name: gamepresence, type: "PLAYING"
+                }, status: 'online'
+            })
                 .catch((err) => {
                     if (err)
                         logger.warn(err.message);
                 });
         });
 
-        this.client.on('message', msg => {
+        this.client.on('message', async (msg) => {
             try {
                 if (msg.author === this.client.user) {
                     logger.verbose(`ME: ${msg.content}`);
@@ -237,10 +298,12 @@ class Bot {
                     let reply = cmd.parseMessage(msg);
                     this.answerMessage(msg, reply);
                 } else {
-                    this.getGuildHandler(msg.guild, prefix).handleMessage(msg);
+                    let gh = await this.getGuildHandler(msg.guild, prefix);
+                    await gh.handleMessage(msg);
                 }
             } catch (err) {
-                logger.error(err.stack);
+                logger.error(err.message);
+                logger.debug(err.stack);
             }
         });
     }
@@ -252,19 +315,19 @@ class Bot {
      * @param answer
      */
     answerMessage(msg, answer) {
-        if (answer instanceof Promise || answer) {
+        if (answer instanceof Promise || answer)
             if (answer instanceof Discord.RichEmbed) {
                 (this.mention) ? msg.reply('', answer) : msg.channel.send('', answer);
             } else if (answer instanceof Promise) {
                 answer
-                    .then((answer) => answerMessage(msg, answer))
-                    .catch((error) => answerMessage(msg, error));
+                    .then((answer) => this.answerMessage(msg, answer))
+                    .catch((error) => this.answerMessage(msg, error));
             } else {
                 (this.mention) ? msg.reply(answer) : msg.channel.send(answer);
             }
-        } else {
-            logger.warn(`Empty answer won't be send.`);
-        }
+         else
+            logger.verbose(`Empty answer won't be send.`);
+
     }
 
     /**
@@ -273,9 +336,12 @@ class Bot {
      * @param prefix
      * @returns {*}
      */
-    getGuildHandler(guild, prefix) {
-        if (!this.guildHandlers[guild.id])
-            this.guildHandlers[guild.id] = new guilding.GuildHandler(guild, prefix);
+    async getGuildHandler(guild, prefix) {
+        if (!this.guildHandlers[guild.id]) {
+            let newGuildHandler = new guilding.GuildHandler(guild, prefix);
+            await newGuildHandler.initDatabase();
+            this.guildHandlers[guild.id] = newGuildHandler;
+        }
         return this.guildHandlers[guild.id];
     }
 }
@@ -284,8 +350,17 @@ class Bot {
 // Executing the main function
 if (typeof require !== 'undefined' && require.main === module) {
     logger.info("Starting up... ");  // log the current date so that the logfile is better to read.
+    logger.debug('Calling constructor...');
     let discordBot = new Bot();
-    discordBot.start().catch((err) => {
+    logger.debug('Initializing services...');
+    discordBot.initServices().then(() => {
+        logger.debug('Starting Bot...');
+        discordBot.start().catch((err) => { //eslint-disable-line promise/no-nesting
+            logger.error(err.message);
+            logger.debug(err.stack);
+        });
+    }).catch((err) => {
         logger.error(err.message);
+        logger.debug(err.stack);
     });
 }
