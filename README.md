@@ -20,18 +20,27 @@ The arguments are optional because the token and youtube-api-key that the bot ne
     "DISCORD NAME"  // specify a list of bot owners that can use the owner commands
   ],
   "music": {
-    "timeout": 300000
+    "timeout": 300000,   // exit timeout after noone is left in the voicechannel
+    "livePuffer": 20000, // the preloaded video length (see ytdl-core module)
   },
   "webservice": {     // optional
     "enabled": true,  // enable the server
     "port": 8080,     // set the port
-    "graphiql": false // switch the graphiql interface on/off
+    "graphiql": false, // switch the graphiql interface on/off,
+    "sessionSecret": "PROVIDE A SECURE SECRET",
+    "https": {
+      "enabled": true, //enable https
+      "keyFile": "PATH TO YOUR SSL KEY FILE",
+      "certFile": "PATH TO YOUR SSL CERTIFICATE FILE"
+    }
   }
 }
 ```
 
 If the keys are missing from the config file, the bot exits. This behaviour can be deactivated by setting the `-i` commandline flag.
-You need to generate an api-token to access the graphql webservice. You can generate one with the owner-command `tokengen` uses via PM.
+You need to create a user to access the webinterface. Use `~createUser [name] [password] [scope]` to create one (Only works via PM).
+Please provide a **SECURE** `sessionSecred`.
+To enable https you need a certificate and key file. Those can be generated with openssl.
 
 Keys
 ---

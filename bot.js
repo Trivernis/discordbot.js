@@ -6,7 +6,9 @@ const Discord = require("discord.js"),
     utils = require('./lib/utils'),
     config = require('./config.json'),
     args = require('args-parser')(process.argv),
+    waterfall = require('promise-waterfall'),
     sqliteAsync = require('./lib/sqliteAsync'),
+    globcommands = require('./commands/globalcommands.json'),
     authToken = args.token || config.api.botToken,
     prefix = args.prefix || config.prefix || '~',
     gamepresence = args.game || config.presence;
@@ -21,6 +23,7 @@ class Bot {
         this.maindb = null;
         this.presences = [];
         this.guildHandlers = [];
+        this.userRates = {};
 
         logger.verbose('Verifying config');
 
@@ -159,25 +162,25 @@ class Bot {
      */
     registerCommands() {
         // useless test command
-        cmd.createGlobalCommand(prefix + 'repeatafterme', (msg, argv, args) => {
+        cmd.createGlobalCommand(prefix, globcommands.utils.say, (msg, argv, args) => {
             return args.join(' ');
-        }, [], "Repeats what you say");
+        });
 
         // adds a presence that will be saved in the presence file and added to the rotation
-        cmd.createGlobalCommand(prefix + 'addpresence', async (msg, argv, args) => {
+        cmd.createGlobalCommand(prefix, globcommands.utils.addpresence, async (msg, argv, args) => {
             let p = args.join(' ');
             this.presences.push(p);
 
             await this.maindb.run('INSERT INTO presences (text) VALUES (?)', [p]);
             return `Added Presence \`${p}\``;
-        }, [], "Adds a presence to the rotation.", 'owner');
+        });
 
         // shuts down the bot after destroying the client
-        cmd.createGlobalCommand(prefix + 'shutdown', async (msg) => {
+        cmd.createGlobalCommand(prefix, globcommands.utils.shutdown, async (msg) => {
             try {
                 await msg.reply('Shutting down...');
                 logger.debug('Destroying client...');
-            } catch(err) {
+            } catch (err) {
                 logger.error(err.message);
                 logger.debug(err.stack);
             }
@@ -192,14 +195,14 @@ class Bot {
                 await this.webServer.stop();
                 logger.debug(`Exiting Process...`);
                 process.exit(0);
-            } catch(err) {
+            } catch (err) {
                 logger.error(err.message);
                 logger.debug(err.stack);
             }
-        }, [], "Shuts the bot down.", 'owner');
+        });
 
         // forces a presence rotation
-        cmd.createGlobalCommand(prefix + 'rotate', () => {
+        cmd.createGlobalCommand(prefix, globcommands.utils.rotate, () => {
             try {
                 this.client.clearInterval(this.rotator);
                 this.rotatePresence();
@@ -207,15 +210,15 @@ class Bot {
             } catch (error) {
                 logger.warn(error.message);
             }
-        }, [], 'Force presence rotation', 'owner');
+        });
 
         // ping command that returns the ping attribute of the client
-        cmd.createGlobalCommand(prefix + 'ping', () => {
+        cmd.createGlobalCommand(prefix, globcommands.info.ping, () => {
             return `Current average ping: \`${this.client.ping} ms\``;
-        }, [], 'Returns the current average ping', 'owner');
+        });
 
         // returns the time the bot is running
-        cmd.createGlobalCommand(prefix + 'uptime', () => {
+        cmd.createGlobalCommand(prefix, globcommands.info.uptime, () => {
             let uptime = utils.getSplitDuration(this.client.uptime);
             return new Discord.RichEmbed().setDescription(`
             **${uptime.days}** days
@@ -224,14 +227,14 @@ class Bot {
             **${uptime.seconds}** seconds
             **${uptime.milliseconds}** milliseconds
         `).setTitle('Uptime');
-        }, [], 'Returns the uptime of the bot', 'owner');
+        });
 
         // returns the numbe of guilds, the bot has joined
-        cmd.createGlobalCommand(prefix + 'guilds', () => {
+        cmd.createGlobalCommand(prefix, globcommands.info.guilds, () => {
             return `Number of guilds: \`${this.client.guilds.size}\``;
-        }, [], 'Returns the number of guilds the bot has joined', 'owner');
+        });
 
-        cmd.createGlobalCommand(prefix + 'createUser', (msg, argv) => {
+        cmd.createGlobalCommand(prefix, globcommands.utils.createUser, (msg, argv) => {
             return new Promise((resolve, reject) => {
                 if (msg.guild) {
                     resolve("It's not save here! Try again via PM.");
@@ -247,7 +250,20 @@ class Bot {
                     }).catch((err) => reject(err.message));
                 }
             });
-        }, ['username', 'password', 'scope'], 'Generates a token for a username and returns it.', 'owner');
+        });
+
+        cmd.createGlobalCommand(prefix, globcommands.info.about, () => {
+            return new Discord.RichEmbed()
+                .setTitle('About')
+                .setDescription(globcommands.info.about.response.about_creator)
+                .addField('Icon', globcommands.info.about.response.about_icon);
+        });
+
+        cmd.createGlobalCommand(prefix, globcommands.utils.bugreport, () => {
+            return new Discord.RichEmbed()
+                .setTitle('Where to report a bug?')
+                .setDescription(globcommands.utils.bugreport.response.bug_report);
+        });
     }
 
     /**
@@ -261,7 +277,7 @@ class Bot {
             game: {name: `${gamepresence} | ${pr}`, type: "PLAYING"},
             status: 'online'
         }).then(() => logger.debug(`Presence rotation to ${pr}`))
-            .catch((err) =>  logger.warn(err.message));
+            .catch((err) => logger.warn(err.message));
     }
 
 
@@ -293,19 +309,53 @@ class Bot {
                     logger.verbose(`ME: ${msg.content}`);
                     return;
                 }
-                logger.verbose(`<${msg.author.tag}>: ${msg.content}`);
-                if (!msg.guild) {
-                    let reply = cmd.parseMessage(msg);
-                    this.answerMessage(msg, reply);
-                } else {
-                    let gh = await this.getGuildHandler(msg.guild, prefix);
-                    await gh.handleMessage(msg);
+                if (this.checkRate(msg.author.tag)) {
+                    logger.verbose(`<${msg.author.tag}>: ${msg.content}`);
+                    if (!msg.guild) {
+                        let reply = cmd.parseMessage(msg);
+                        await this.answerMessage(msg, reply);
+                    } else {
+                        let gh = await this.getGuildHandler(msg.guild, prefix);
+                        await gh.handleMessage(msg);
+                    }
+                    if (((Date.now() - this.userRates[msg.author.tag].last)/1000) > (config.rateLimitTime || 10))
+                        this.userRates[msg.author.tag].count = 0;
+                    else
+                        this.userRates[msg.author.tag].count++;
+                    this.userRates[msg.author.tag].last = Date.now();
+                    this.userRates[msg.author.tag].reached = false;
+                } else if (!this.userRates[msg.author.tag].reached) {
+                    logger.verbose(`${msg.author.tag} reached it's rate limit.`);
+                    this.userRates[msg.author.tag].reached = true;
                 }
             } catch (err) {
                 logger.error(err.message);
                 logger.debug(err.stack);
             }
         });
+
+        this.client.on('voiceStateUpdate', async (oldMember, newMember) => {
+            let gh = await this.getGuildHandler(newMember.guild, prefix);
+            if (newMember.user === this.client.user) {
+                if (newMember.voiceChannel)
+                    gh.dj.updateChannel(newMember.voiceChannel);
+            } else {
+                if (oldMember.voiceChannel === gh.dj.voiceChannel || newMember.voiceChannel === gh.dj.voiceChannel)
+                    gh.dj.checkListeners();
+            }
+        });
+    }
+
+    /**
+     * Returns true if the user has not reached it's rate limit.
+     * @param usertag
+     * @returns {boolean}
+     */
+    checkRate(usertag) {
+        if (!this.userRates[usertag])
+            this.userRates[usertag] = {last: Date.now(), count: 0};
+        return ((Date.now() - this.userRates[usertag].last)/1000) > (config.rateLimitTime || 10) ||
+            this.userRates[usertag].count < (config.rateLimitCount || 5);
     }
 
     /**
@@ -314,20 +364,19 @@ class Bot {
      * @param msg
      * @param answer
      */
-    answerMessage(msg, answer) {
-        if (answer instanceof Promise || answer)
-            if (answer instanceof Discord.RichEmbed) {
-                (this.mention) ? msg.reply('', answer) : msg.channel.send('', answer);
-            } else if (answer instanceof Promise) {
-                answer
-                    .then((answer) => this.answerMessage(msg, answer))
-                    .catch((error) => this.answerMessage(msg, error));
-            } else {
-                (this.mention) ? msg.reply(answer) : msg.channel.send(answer);
-            }
-         else
-            logger.verbose(`Empty answer won't be send.`);
-
+    async answerMessage(msg, answer) {
+        if (answer instanceof Discord.RichEmbed) {
+            (this.mention) ? msg.reply('', answer) : msg.channel.send('', answer);
+        } else if (answer instanceof Promise) {
+            let resolvedAnswer = await  answer;
+            await this.answerMessage(msg, resolvedAnswer);
+        } else if (answer instanceof Array) {
+            await waterfall(answer.map((x) => async () => await this.answerMessage(msg, x))); // execute each after another
+        } else if ({}.toString.call(answer) === '[object Function]') {
+            await this.answerMessage(msg, answer());
+        } else if (answer) {
+            (this.mention) ? msg.reply(answer) : msg.channel.send(answer);
+        }
     }
 
     /**

@@ -5,6 +5,46 @@
       "permission": "all",
       "description": "Shows the roles used for commands on the server.",
       "category": "Utility"
+    },
+    "savecmd": {
+      "name": "savecmd",
+      "permission": "moderator",
+      "description": "Saves a sequence of commands under a new name. ~save [cmdsequence] [cmdname]. Semicoli must be escaped with \\ (Backslash)",
+      "category": "Utility",
+      "response": {
+        "no_recursion": "You are **not** allowed to execute another saved command in this sequence. This is a safety measure to avoid endlessly recursive calls.",
+        "sequence_too_long": "This command sequence is too long!"
+      }
+    },
+    "savedcmd": {
+      "name": "savedcmd",
+      "permission": "all",
+      "description": "Displays the saved commands.",
+      "category": "Utility",
+      "response": {
+        "no_commands": "There are no saved commands."
+      }
+    },
+    "deletecmd": {
+      "name": "deletecmd",
+      "permission": "moderator",
+      "description": "Delete a saved command.",
+      "args": [
+        "cmdname"
+      ],
+      "category": "Utility"
+    },
+    "execute": {
+      "name": "execute",
+      "permission": "all",
+      "args": [
+        "cmdname"
+      ],
+      "description": "Execute saved commands.",
+      "category": "Utility",
+      "response": {
+        "not_found": "This command could not be found."
+      }
     }
   },
   "music": {
@@ -132,8 +172,8 @@
         "repeat_false": "Not listening on repeat anymore."
       }
     },
-    "save": {
-      "name": "save",
+    "savemedia": {
+      "name": "savemedia",
       "permission": "dj",
       "args": [
         "url"
@@ -141,13 +181,22 @@
       "description": "Saves the YouTube song/playlist with a specific name",
       "category": "Music"
     },
-    "saved": {
-      "name": "saved",
+    "savedmedia": {
+      "name": "savedmedia",
       "permission": "all",
-      "description": "Prints out all saved playlists.",
+      "description": "Prints out all saved playlists and songs.",
       "category": "Music",
       "response": {
         "no_saved": "There are no saved songs/playlists :("
+      }
+    },
+    "deletemedia": {
+      "name": "deletemedia",
+      "permission": "dj",
+      "description": "Deletes a saved media entry. ~deletemedia [name]",
+      "category": "Music",
+      "response": {
+        "no_name": "You must provide a name for the media that shall be deleted."
       }
     }
   }

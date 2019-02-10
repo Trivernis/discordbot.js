@@ -3,11 +3,85 @@
     "help": {
       "name": "help",
       "permission": "all",
-      "description": "Shows this help command",
+      "description": "Shows this help command.",
       "category": "Utility",
       "args": [
         "command"
       ]
+    },
+    "say": {
+      "name": "say",
+      "permission": "all",
+      "description": "Says something. ~say [String].",
+      "category": "Utility"
+    },
+    "addpresence": {
+      "name": "addpresence",
+      "permission": "owner",
+      "description": "Adds a presence to presences.",
+      "category": "Utility"
+    },
+    "shutdown": {
+      "name": "shutdown",
+      "description": "Shuts the bot down.",
+      "permission": "owner",
+      "category": "Utility"
+    },
+    "rotate": {
+      "name": "rotate",
+      "description": "Forces a presence rotation",
+      "permission": "owner",
+      "category": "Utility"
+    },
+    "createUser": {
+      "name": "createUser",
+      "permission": "owner",
+      "description": "Creates a new user for the webinterface.",
+      "category": "Utility",
+      "args": [
+        "username",
+        "password",
+        "scope"
+      ]
+    },
+    "bugreport": {
+      "name": "bug",
+      "permission": "all",
+      "description": "Get info about how to report a bug",
+      "category": "Utility",
+      "response": {
+        "bug_report": "Please report your bugs [here](https://github.com/Trivernis/discordbot.js/issues)"
+      }
+    }
+  },
+  "info": {
+    "about": {
+      "name": "about",
+      "permission": "all",
+      "description": "Shows information about this bot.",
+      "category": "Info",
+      "response": {
+        "about_icon": "This icon war created by [blackrose14344](https://www.deviantart.com/blackrose14344). \n [Original](https://www.deviantart.com/blackrose14344/art/2B-Chi-B-685771489)",
+        "about_creator": "This bot was created by Trivernis. More about this bot [here](https://github.com/Trivernis/discordbot.js)."
+      }
+    },
+    "ping": {
+      "name": "ping",
+      "permission": "owner",
+      "description": "Answers with the current average ping of the bot.",
+      "category": "Info"
+    },
+    "uptime": {
+      "name": "uptime",
+      "permission": "owner",
+      "description": "Answers with the current uptime of the bot.",
+      "category": "Info"
+    },
+    "guilds": {
+      "name": "guilds",
+      "permission": "owner",
+      "description": "Answers with the number of guilds the bot has joined",
+      "category": "Info"
     }
   }
 }

@@ -194,6 +194,12 @@ describe('lib/music', function() {
         s.push(null);
         return s;
     });
+    music.__set__('config', {
+       music: {
+           livePuffer: 2000
+       },
+        "api": {}
+    });
 
     describe('#DJ', function () {
 
