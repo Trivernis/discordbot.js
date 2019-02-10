@@ -22,6 +22,7 @@ class Bot {
         this.maindb = null;
         this.presences = [];
         this.guildHandlers = [];
+        this.userRates = {};
 
         logger.verbose('Verifying config');
 
@@ -294,13 +295,24 @@ class Bot {
                     logger.verbose(`ME: ${msg.content}`);
                     return;
                 }
-                logger.verbose(`<${msg.author.tag}>: ${msg.content}`);
-                if (!msg.guild) {
-                    let reply = cmd.parseMessage(msg);
-                    this.answerMessage(msg, reply);
-                } else {
-                    let gh = await this.getGuildHandler(msg.guild, prefix);
-                    await gh.handleMessage(msg);
+                if (this.checkRate(msg.author.tag)) {
+                    logger.verbose(`<${msg.author.tag}>: ${msg.content}`);
+                    if (!msg.guild) {
+                        let reply = cmd.parseMessage(msg);
+                        await this.answerMessage(msg, reply);
+                    } else {
+                        let gh = await this.getGuildHandler(msg.guild, prefix);
+                        await gh.handleMessage(msg);
+                    }
+                    if (((Date.now() - this.userRates[msg.author.tag].last)/1000) > (config.rateLimitTime || 10))
+                        this.userRates[msg.author.tag].count = 0;
+                    else
+                        this.userRates[msg.author.tag].count++;
+                    this.userRates[msg.author.tag].last = Date.now();
+                    this.userRates[msg.author.tag].reached = false;
+                } else if (!this.userRates[msg.author.tag].reached) {
+                    logger.verbose(`${msg.author.tag} reached it's rate limit.`);
+                    this.userRates[msg.author.tag].reached = true;
                 }
             } catch (err) {
                 logger.error(err.message);
@@ -318,6 +330,18 @@ class Bot {
                     gh.dj.checkListeners();
             }
         });
+    }
+
+    /**
+     * Returns true if the user has not reached it's rate limit.
+     * @param usertag
+     * @returns {boolean}
+     */
+    checkRate(usertag) {
+        if (!this.userRates[usertag])
+            this.userRates[usertag] = {last: Date.now(), count: 0};
+        return ((Date.now() - this.userRates[usertag].last)/1000) > (config.rateLimitTime || 10) ||
+            this.userRates[usertag].count < (config.rateLimitCount || 5);
     }
 
     /**
