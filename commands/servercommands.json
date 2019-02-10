@@ -10,7 +10,10 @@
       "name": "savecmd",
       "permission": "moderator",
       "description": "Saves a sequence of commands under a new name. ~save [cmdsequence] [cmdname]. Semicoli must be escaped with \\ (Backslash)",
-      "category": "Utility"
+      "category": "Utility",
+      "response": {
+        "no_recursion": "You are **not** allowed to execute another saved command in this sequence. This is a safety measure to avoid endlessly recursive calls."
+      }
     },
     "savedcmd": {
       "name": "savedcmd",
