@@ -8,6 +8,7 @@ const Discord = require("discord.js"),
     args = require('args-parser')(process.argv),
     waterfall = require('promise-waterfall'),
     sqliteAsync = require('./lib/sqliteAsync'),
+    globcommands = require('./commands/globalcommands.json'),
     authToken = args.token || config.api.botToken,
     prefix = args.prefix || config.prefix || '~',
     gamepresence = args.game || config.presence;
@@ -161,21 +162,21 @@ class Bot {
      */
     registerCommands() {
         // useless test command
-        cmd.createGlobalCommand(prefix + 'say', (msg, argv, args) => {
+        cmd.createGlobalCommand(prefix, globcommands.utils.say, (msg, argv, args) => {
             return args.join(' ');
-        }, [], "Repeats what you say");
+        });
 
         // adds a presence that will be saved in the presence file and added to the rotation
-        cmd.createGlobalCommand(prefix + 'addpresence', async (msg, argv, args) => {
+        cmd.createGlobalCommand(prefix, globcommands.utils.addpresence, async (msg, argv, args) => {
             let p = args.join(' ');
             this.presences.push(p);
 
             await this.maindb.run('INSERT INTO presences (text) VALUES (?)', [p]);
             return `Added Presence \`${p}\``;
-        }, [], "Adds a presence to the rotation.", 'owner');
+        });
 
         // shuts down the bot after destroying the client
-        cmd.createGlobalCommand(prefix + 'shutdown', async (msg) => {
+        cmd.createGlobalCommand(prefix, globcommands.utils.shutdown, async (msg) => {
             try {
                 await msg.reply('Shutting down...');
                 logger.debug('Destroying client...');
@@ -198,10 +199,10 @@ class Bot {
                 logger.error(err.message);
                 logger.debug(err.stack);
             }
-        }, [], "Shuts the bot down.", 'owner');
+        });
 
         // forces a presence rotation
-        cmd.createGlobalCommand(prefix + 'rotate', () => {
+        cmd.createGlobalCommand(prefix, globcommands.utils.rotate, () => {
             try {
                 this.client.clearInterval(this.rotator);
                 this.rotatePresence();
@@ -209,15 +210,15 @@ class Bot {
             } catch (error) {
                 logger.warn(error.message);
             }
-        }, [], 'Force presence rotation', 'owner');
+        });
 
         // ping command that returns the ping attribute of the client
-        cmd.createGlobalCommand(prefix + 'ping', () => {
+        cmd.createGlobalCommand(prefix, globcommands.info.ping, () => {
             return `Current average ping: \`${this.client.ping} ms\``;
-        }, [], 'Returns the current average ping', 'owner');
+        });
 
         // returns the time the bot is running
-        cmd.createGlobalCommand(prefix + 'uptime', () => {
+        cmd.createGlobalCommand(prefix , globcommands.info.uptime, () => {
             let uptime = utils.getSplitDuration(this.client.uptime);
             return new Discord.RichEmbed().setDescription(`
             **${uptime.days}** days
@@ -226,14 +227,14 @@ class Bot {
             **${uptime.seconds}** seconds
             **${uptime.milliseconds}** milliseconds
         `).setTitle('Uptime');
-        }, [], 'Returns the uptime of the bot', 'owner');
+        });
 
         // returns the numbe of guilds, the bot has joined
-        cmd.createGlobalCommand(prefix + 'guilds', () => {
+        cmd.createGlobalCommand(prefix, globcommands.info.guilds, () => {
             return `Number of guilds: \`${this.client.guilds.size}\``;
-        }, [], 'Returns the number of guilds the bot has joined', 'owner');
+        });
 
-        cmd.createGlobalCommand(prefix + 'createUser', (msg, argv) => {
+        cmd.createGlobalCommand(prefix, globcommands.utils.createUser, (msg, argv) => {
             return new Promise((resolve, reject) => {
                 if (msg.guild) {
                     resolve("It's not save here! Try again via PM.");
@@ -249,7 +250,20 @@ class Bot {
                     }).catch((err) => reject(err.message));
                 }
             });
-        }, ['username', 'password', 'scope'], 'Generates a token for a username and returns it.', 'owner');
+        });
+
+        cmd.createGlobalCommand(prefix, globcommands.info.about, () => {
+            return new Discord.RichEmbed()
+                .setTitle('About')
+                .setDescription(globcommands.info.about.response.about_creator)
+                .addField('Icon', globcommands.info.about.response.about_icon);
+        });
+
+        cmd.createGlobalCommand(prefix, globcommands.utils.bugreport, () => {
+            return new Discord.RichEmbed()
+                .setTitle('Where to report a bug?')
+                .setDescription(globcommands.utils.bugreport.response.bug_report);
+        });
     }
 
     /**
