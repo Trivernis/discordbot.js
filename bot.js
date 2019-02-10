@@ -160,7 +160,7 @@ class Bot {
      */
     registerCommands() {
         // useless test command
-        cmd.createGlobalCommand(prefix + 'repeatafterme', (msg, argv, args) => {
+        cmd.createGlobalCommand(prefix + 'say', (msg, argv, args) => {
             return args.join(' ');
         }, [], "Repeats what you say");
 
@@ -333,10 +333,7 @@ class Bot {
             let resolvedAnswer = await  answer;
             await this.answerMessage(msg, resolvedAnswer);
         } else if (answer instanceof Array) {
-            let answerPromises = [];
-            for (let answerPart of answer)
-                answerPromises.push(async () => await this.answerMessage(msg, answerPart));
-            await waterfall(answerPromises);
+            await waterfall(answer.map((x) => async () => await this.answerMessage(msg, x))); // execute each after another
         } else if ({}.toString.call(answer) === '[object Function]') {
             await this.answerMessage(msg, answer());
         } else if (answer) {
