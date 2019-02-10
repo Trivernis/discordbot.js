@@ -218,7 +218,7 @@ class Bot {
         });
 
         // returns the time the bot is running
-        cmd.createGlobalCommand(prefix , globcommands.info.uptime, () => {
+        cmd.createGlobalCommand(prefix, globcommands.info.uptime, () => {
             let uptime = utils.getSplitDuration(this.client.uptime);
             return new Discord.RichEmbed().setDescription(`
             **${uptime.days}** days
