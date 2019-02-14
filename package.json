@@ -37,7 +37,7 @@
     "assert": "1.4.1",
     "chai": "4.2.0",
     "mocha": "5.2.0",
-    "nyc": "13.2.0",
+    "nyc": "13.3.0",
     "rewire": "4.0.1",
     "sinon": "7.2.3",
     "eslint-plugin-graphql": "3.0.3",
