@@ -17,7 +17,7 @@ let weblib = null;
 
 class Bot {
     constructor() {
-        this.client = new Discord.Client();
+        this.client = new Discord.Client({autoReconnect: true});
         this.mention = false;
         this.rotator = null;
         this.maindb = null;
