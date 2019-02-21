@@ -29,19 +29,19 @@
     "pug": "2.0.3",
     "sqlite3": "4.0.6",
     "winston": "3.2.1",
-    "winston-daily-rotate-file": "3.6.0",
+    "winston-daily-rotate-file": "3.7.0",
     "youtube-playlist-info": "1.1.2",
     "ytdl-core": "0.29.1"
   },
   "devDependencies": {
     "assert": "1.4.1",
     "chai": "4.2.0",
-    "mocha": "5.2.0",
-    "nyc": "13.2.0",
+    "mocha": "6.0.0",
+    "nyc": "13.3.0",
     "rewire": "4.0.1",
-    "sinon": "7.2.3",
+    "sinon": "7.2.4",
     "eslint-plugin-graphql": "3.0.3",
-    "eslint": "5.13.0",
+    "eslint": "5.14.1",
     "eslint-plugin-promise": "4.0.1"
   },
   "eslintConfig": {
