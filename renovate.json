@@ -3,6 +3,6 @@
     "config:base"
   ],
   "baseBranches": [
-    "dependencie-updates"
+    "dependency-updates"
   ]
 }
