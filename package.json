@@ -1,6 +1,6 @@
 {
   "name": "discordbot",
-  "version": "1.0.0",
+  "version": "0.9.1",
   "scripts": {
     "start": "node bot.js",
     "test": "mocha --exit",
@@ -23,6 +23,7 @@
     "graphql": "14.1.1",
     "js-md5": "0.7.3",
     "js-sha512": "0.8.0",
+    "node-fetch": "^2.3.0",
     "node-sass": "4.11.0",
     "opusscript": "0.0.6",
     "promise-waterfall": "0.1.0",

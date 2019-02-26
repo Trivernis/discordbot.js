@@ -1,0 +1,53 @@
+query ($id: Int) {
+    Media (id: $id, type: MANGA) {
+        id
+        title {
+            romaji
+            english
+            native
+        }
+        status
+        startDate {
+            year
+            month
+            day
+        }
+        endDate {
+            year
+            month
+            day
+        }
+        format
+        chapters
+        volumes
+        genres
+        siteUrl
+        coverImage {
+            large
+            medium
+            color
+        }
+        staff {
+            edges {
+                node {
+                    id
+                    name {
+                        first
+                        last
+                        native
+                    }
+                    image {
+                        large
+                        medium
+                    }
+                    language
+                    siteUrl
+                }
+                role
+            }
+        }
+        description(asHtml: false)
+        averageScore
+        favourites
+    }
+}

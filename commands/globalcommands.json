@@ -80,8 +80,21 @@
     "guilds": {
       "name": "guilds",
       "permission": "owner",
-      "description": "Answers with the number of guilds the bot has joined",
+      "description": "Answers with the number of guilds the bot has joined.",
       "category": "Info"
+    }
+  },
+  "api": {
+    "AniList": {
+      "animeSearch": {
+        "name": "anime",
+        "permission": "all",
+        "description": "Answers the anime found for that name on AniList.",
+        "category": "AniList",
+        "response": {
+          "not_found": "The Anime was not found :("
+        }
+      }
     }
   }
 }

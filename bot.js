@@ -8,7 +8,6 @@ const Discord = require("discord.js"),
     args = require('args-parser')(process.argv),
     waterfall = require('promise-waterfall'),
     sqliteAsync = require('./lib/sqliteAsync'),
-    globcommands = require('./commands/globalcommands.json'),
     authToken = args.token || config.api.botToken,
     prefix = args.prefix || config.prefix || '~',
     gamepresence = args.game || config.presence;
@@ -47,6 +46,7 @@ class Bot {
      */
     async initServices() {
         logger.verbose('Registering cleanup function');
+
         utils.Cleanup(() => {
             for (let gh in Object.values(this.guildHandlers))
                 if (gh instanceof guilding.GuildHandler)
@@ -61,6 +61,7 @@ class Bot {
             this.maindb.close();
         });
         await this.initializeDatabase();
+
         if (config.webservice && config.webservice.enabled)
             await this.initializeWebserver();
         logger.verbose('Registering commands');
@@ -76,6 +77,7 @@ class Bot {
     async start() {
         await this.client.login(authToken);
         logger.debug("Logged in");
+
         if (this.webServer) {
             this.webServer.start();
             logger.info(`WebServer runing on port ${this.webServer.port}`);
@@ -92,6 +94,7 @@ class Bot {
         logger.verbose('Connecting to main database');
         this.maindb = new sqliteAsync.Database('./data/main.db');
         await this.maindb.init();
+
         await this.maindb.run(`${utils.sql.tableExistCreate} presences (
             ${utils.sql.pkIdSerial},
             text VARCHAR(255) UNIQUE NOT NULL
@@ -161,109 +164,9 @@ class Bot {
      * registeres global commands
      */
     registerCommands() {
-        // useless test command
-        cmd.createGlobalCommand(prefix, globcommands.utils.say, (msg, argv, args) => {
-            return args.join(' ');
-        });
-
-        // adds a presence that will be saved in the presence file and added to the rotation
-        cmd.createGlobalCommand(prefix, globcommands.utils.addpresence, async (msg, argv, args) => {
-            let p = args.join(' ');
-            this.presences.push(p);
-
-            await this.maindb.run('INSERT INTO presences (text) VALUES (?)', [p]);
-            return `Added Presence \`${p}\``;
-        });
-
-        // shuts down the bot after destroying the client
-        cmd.createGlobalCommand(prefix, globcommands.utils.shutdown, async (msg) => {
-            try {
-                await msg.reply('Shutting down...');
-                logger.debug('Destroying client...');
-            } catch (err) {
-                logger.error(err.message);
-                logger.debug(err.stack);
-            }
-            try {
-                await this.client.destroy();
-                logger.debug('Exiting server...');
-            } catch (err) {
-                logger.error(err.message);
-                logger.debug(err.stack);
-            }
-            try {
-                await this.webServer.stop();
-                logger.debug(`Exiting Process...`);
-                process.exit(0);
-            } catch (err) {
-                logger.error(err.message);
-                logger.debug(err.stack);
-            }
-        });
-
-        // forces a presence rotation
-        cmd.createGlobalCommand(prefix, globcommands.utils.rotate, () => {
-            try {
-                this.client.clearInterval(this.rotator);
-                this.rotatePresence();
-                this.rotator = this.client.setInterval(() => this.rotatePresence(), config.presence_duration);
-            } catch (error) {
-                logger.warn(error.message);
-            }
-        });
-
-        // ping command that returns the ping attribute of the client
-        cmd.createGlobalCommand(prefix, globcommands.info.ping, () => {
-            return `Current average ping: \`${this.client.ping} ms\``;
-        });
-
-        // returns the time the bot is running
-        cmd.createGlobalCommand(prefix, globcommands.info.uptime, () => {
-            let uptime = utils.getSplitDuration(this.client.uptime);
-            return new Discord.RichEmbed().setDescription(`
-            **${uptime.days}** days
-            **${uptime.hours}** hours
-            **${uptime.minutes}** minutes
-            **${uptime.seconds}** seconds
-            **${uptime.milliseconds}** milliseconds
-        `).setTitle('Uptime');
-        });
-
-        // returns the numbe of guilds, the bot has joined
-        cmd.createGlobalCommand(prefix, globcommands.info.guilds, () => {
-            return `Number of guilds: \`${this.client.guilds.size}\``;
-        });
-
-        cmd.createGlobalCommand(prefix, globcommands.utils.createUser, (msg, argv) => {
-            return new Promise((resolve, reject) => {
-                if (msg.guild) {
-                    resolve("It's not save here! Try again via PM.");
-                } else if (argv.username && argv.scope) {
-                    logger.debug(`Creating user entry ${argv.username}, scope: ${argv.scope}`);
-
-                    this.webServer.createUser(argv.username, argv.password, argv.scope, false).then((token) => {
-                        resolve(`Created entry
-                            username: ${argv.username},
-                            scope: ${argv.scope},
-                            token: ${token}
-                        `);
-                    }).catch((err) => reject(err.message));
-                }
-            });
-        });
-
-        cmd.createGlobalCommand(prefix, globcommands.info.about, () => {
-            return new Discord.RichEmbed()
-                .setTitle('About')
-                .setDescription(globcommands.info.about.response.about_creator)
-                .addField('Icon', globcommands.info.about.response.about_icon);
-        });
-
-        cmd.createGlobalCommand(prefix, globcommands.utils.bugreport, () => {
-            return new Discord.RichEmbed()
-                .setTitle('Where to report a bug?')
-                .setDescription(globcommands.utils.bugreport.response.bug_report);
-        });
+        cmd.registerUtilityCommands(prefix, this);
+        cmd.registerInfoCommands(prefix, this);
+        cmd.registerAnilistApiCommands(prefix);
     }
 
     /**
@@ -292,15 +195,15 @@ class Bot {
 
         this.client.on('ready', () => {
             logger.info(`logged in as ${this.client.user.tag}!`);
+
             this.client.user.setPresence({
                 game: {
                     name: gamepresence, type: "PLAYING"
                 }, status: 'online'
-            })
-                .catch((err) => {
-                    if (err)
-                        logger.warn(err.message);
-                });
+            }).catch((err) => {
+                if (err)
+                    logger.warn(err.message);
+            });
         });
 
         this.client.on('message', async (msg) => {
@@ -336,6 +239,7 @@ class Bot {
 
         this.client.on('voiceStateUpdate', async (oldMember, newMember) => {
             let gh = await this.getGuildHandler(newMember.guild, prefix);
+
             if (newMember.user === this.client.user) {
                 if (newMember.voiceChannel)
                     gh.dj.updateChannel(newMember.voiceChannel);
