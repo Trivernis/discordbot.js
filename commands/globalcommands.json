@@ -94,6 +94,15 @@
         "response": {
           "not_found": "The Anime was not found :("
         }
+      },
+      "mangaSearch": {
+        "name": "manga",
+        "permission": "all",
+        "description": "Answers the manga found for that name on AniList.",
+        "category": "AniList",
+        "response": {
+          "not_found": "The Manga was not found :("
+        }
       }
     }
   }

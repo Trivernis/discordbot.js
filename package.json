@@ -32,7 +32,8 @@
     "winston": "3.2.1",
     "winston-daily-rotate-file": "3.7.0",
     "youtube-playlist-info": "1.1.2",
-    "ytdl-core": "0.29.1"
+    "ytdl-core": "0.29.1",
+    "js-yaml": "latest"
   },
   "devDependencies": {
     "assert": "1.4.1",
@@ -47,7 +48,8 @@
   },
   "eslintConfig": {
     "parserOptions": {
-      "ecmaVersion": 2018
+      "ecmaVersion": 2018,
+      "sourceType": "module"
     },
     "env": {
       "node": true,
