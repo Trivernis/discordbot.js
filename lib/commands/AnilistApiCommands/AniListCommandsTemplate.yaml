@@ -1,0 +1,23 @@
+anime_search:
+  name: anime
+  permission: all
+  usage: anime [search query]
+  description: >
+    Searches AniList.co for the anime Title and returns information about
+    it if there is an result.
+  category: AniList
+  response:
+    not_found: >
+      I couldn't find the anime you were searching for :(
+
+manga_search:
+  name: manga
+  permission: all
+  usage: manga [search query]
+  description: >
+    Searches AniList.co for the manga Title and returns information about
+    it if there is an result.
+  category: AniList
+  response:
+    not_found: >
+      I couldn't find the manga you were searching for :(
