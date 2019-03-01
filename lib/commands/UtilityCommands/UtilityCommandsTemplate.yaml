@@ -1,0 +1,44 @@
+shutdown:
+  name: shutdown
+  description: >
+    Shuts down the bot.
+  permission: owner
+  category: Utility
+
+add_presence:
+  name: addpresence
+  description: >
+    Adds a Rich Presence to the bot.
+  permission: owner
+  category: Utility
+  usage: addpresence [presence]
+
+rotate_presence:
+  name: rotate_presence
+  description: >
+    Forces a presence rotation
+  permission: owner
+  category: Utility
+
+create_user:
+  name: create_user
+  description: >
+    Creates a user for the webinterface.
+  permission: owner
+  category: Utility
+  args:
+    - username
+    - password
+    - scope
+
+bugreport:
+  name: bug
+  description: >
+    Get information about where to report bugs.
+  permission: all
+  category: Utility
+  response:
+    title: >
+      You want to report a bug?
+    bug_report: >
+      Please report your bugs [here](https://github.com/Trivernis/discordbot.js/issues)

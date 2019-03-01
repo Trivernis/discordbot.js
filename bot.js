@@ -1,6 +1,7 @@
 const Discord = require("discord.js"),
     fs = require('fs-extra'),
     logger = require('./lib/logging').getLogger(),
+    msgLib = require('./lib/MessageLib'),
     cmd = require("./lib/cmd"),
     guilding = require('./lib/guilding'),
     utils = require('./lib/utils'),
@@ -21,6 +22,7 @@ class Bot {
         this.rotator = null;
         this.maindb = null;
         this.presences = [];
+        this.messageHandler = new msgLib.MessageHandler(this.client, logger);
         this.guildHandlers = [];
         this.userRates = {};
 
@@ -65,7 +67,11 @@ class Bot {
         if (config.webservice && config.webservice.enabled)
             await this.initializeWebserver();
         logger.verbose('Registering commands');
-        this.registerCommands();
+        await this.messageHandler
+            .registerCommandModule(require('./lib/commands/AnilistApiCommands').module, {});
+        await this.messageHandler
+            .registerCommandModule(require('./lib/commands/UtilityCommands').module, {bot: this, logger: logger, config: config});
+        //this.registerCommands();
         this.registerCallbacks();
         cmd.init(prefix);
     }
@@ -166,7 +172,6 @@ class Bot {
     registerCommands() {
         cmd.registerUtilityCommands(prefix, this);
         cmd.registerInfoCommands(prefix, this);
-        cmd.registerAnilistApiCommands(prefix);
     }
 
     /**
@@ -206,6 +211,7 @@ class Bot {
             });
         });
 
+        /*
         this.client.on('message', async (msg) => {
             try {
                 if (msg.author === this.client.user) {
@@ -235,7 +241,7 @@ class Bot {
                 logger.error(err.message);
                 logger.debug(err.stack);
             }
-        });
+        });*/
 
         this.client.on('voiceStateUpdate', async (oldMember, newMember) => {
             let gh = await this.getGuildHandler(newMember.guild, prefix);
