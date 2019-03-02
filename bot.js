@@ -71,6 +71,8 @@ class Bot {
             .registerCommandModule(require('./lib/commands/AnilistApiCommands').module, {});
         await this.messageHandler
             .registerCommandModule(require('./lib/commands/UtilityCommands').module, {bot: this, logger: logger, config: config});
+        await this.messageHandler
+            .registerCommandModule(require('./lib/commands/InfoCommands').module, {client: this.client});
         //this.registerCommands();
         this.registerCallbacks();
         cmd.init(prefix);
