@@ -3,7 +3,6 @@ const mockobjects = require('./mockobjects.js'),
     sinon = require('sinon'),
     assert = require('assert'),
     rewire = require('rewire');
-let Discord = require("discord.js");
 
 mockobjects.mockLogger = {
     error: () => {},
@@ -180,7 +179,7 @@ describe('lib/utils', function() {
 
 describe('lib/music', function() {
 
-    const music = rewire('../lib/music');
+    const music = rewire('../lib/MusicLib');
     const Readable = require('stream').Readable;
 
     music.__set__("logger", mockobjects.mockLogger);
@@ -204,7 +203,7 @@ describe('lib/music', function() {
     describe('#MusicPlayer', function () {
 
         it('connects to a VoiceChannel', function (done) {
-            let dj = new music.DJ(mockobjects.mockVoicechannel);
+            let dj = new music.MusicPlayer(mockobjects.mockVoicechannel);
             dj.connect().then(()=> {
                 assert(dj.connected);
                 done();
@@ -212,7 +211,7 @@ describe('lib/music', function() {
         });
 
         it('listens on Repeat', function () {
-            let dj = new music.DJ(mockobjects.mockVoicechannel);
+            let dj = new music.MusicPlayer(mockobjects.mockVoicechannel);
             dj.current = {'url': '', 'title': ''};
             dj.listenOnRepeat = true;
 
@@ -222,7 +221,7 @@ describe('lib/music', function() {
 
         it('plays Files', function (done) {
 
-            let dj = new music.DJ(mockobjects.mockVoicechannel);
+            let dj = new music.MusicPlayer(mockobjects.mockVoicechannel);
             dj.connect().then(() => {
                 dj.playFile();
                 assert(dj.playing);
@@ -231,7 +230,7 @@ describe('lib/music', function() {
         });
 
         it('plays YouTube urls', function (done) {
-            let dj = new music.DJ(mockobjects.mockVoicechannel);
+            let dj = new music.MusicPlayer(mockobjects.mockVoicechannel);
             dj.connect().then(() => {
                 dj.playYouTube('http://www.youtube.com/watch?v=ABCDEFGHIJK');
                 setTimeout(() => {
@@ -242,7 +241,7 @@ describe('lib/music', function() {
         });
 
         it('gets the video name', function (done) {
-            let dj = new music.DJ(mockobjects.mockVoicechannel);
+            let dj = new music.MusicPlayer(mockobjects.mockVoicechannel);
             dj.getVideoName('http://www.youtube.com/watch?v=ABCDEFGHIJK').then((name) => {
                 assert(name === 'test');
                 done();
@@ -250,7 +249,7 @@ describe('lib/music', function() {
         });
 
         it('sets the volume', function(done) {
-            let dj = new music.DJ(mockobjects.mockVoicechannel);
+            let dj = new music.MusicPlayer(mockobjects.mockVoicechannel);
             dj.connect().then(() => {
                 dj.playFile();
                 dj.setVolume(100);
@@ -260,7 +259,7 @@ describe('lib/music', function() {
         });
 
         it('pauses playback', function(done) {
-            let dj = new music.DJ(mockobjects.mockVoicechannel);
+            let dj = new music.MusicPlayer(mockobjects.mockVoicechannel);
             dj.connect().then(() => {
                 dj.playFile();
                 dj.pause();
@@ -269,7 +268,7 @@ describe('lib/music', function() {
         });
 
         it('resumes playback', function(done) {
-            let dj = new music.DJ(mockobjects.mockVoicechannel);
+            let dj = new music.MusicPlayer(mockobjects.mockVoicechannel);
             dj.connect().then(() => {
                 dj.playFile();
                 dj.resume();
@@ -278,7 +277,7 @@ describe('lib/music', function() {
         });
 
         it('stops playback', function(done) {
-            let dj = new music.DJ(mockobjects.mockVoicechannel);
+            let dj = new music.MusicPlayer(mockobjects.mockVoicechannel);
             dj.connect().then(() => {
                 dj.playFile();
                 assert(dj.playing);
@@ -289,7 +288,7 @@ describe('lib/music', function() {
         });
 
         it('skips songs', function(done) {
-            let dj = new music.DJ(mockobjects.mockVoicechannel);
+            let dj = new music.MusicPlayer(mockobjects.mockVoicechannel);
             dj.connect().then(() => {
                 dj.playYouTube('http://www.youtube.com/watch?v=ABCDEFGHIJK');
                 dj.playYouTube('http://www.youtube.com/watch?v=ABCDEFGHIJK');
@@ -302,7 +301,7 @@ describe('lib/music', function() {
         });
 
         it('returns a playlist', function(done) {
-            let dj = new music.DJ(mockobjects.mockVoicechannel);
+            let dj = new music.MusicPlayer(mockobjects.mockVoicechannel);
             dj.connect().then(() => {
                 dj.queue = [{
                     'title': 'title',
@@ -315,7 +314,7 @@ describe('lib/music', function() {
         });
 
         it('clears the queue', function(done) {
-            let dj = new music.DJ(mockobjects.mockVoicechannel);
+            let dj = new music.MusicPlayer(mockobjects.mockVoicechannel);
             dj.connect().then(() => {
                 dj.queue = [{
                     'title': 'title',
@@ -330,163 +329,63 @@ describe('lib/music', function() {
     });
 });
 
-describe('lib/cmd', function() {
-    const cmd = rewire('../lib/cmd');
-    cmd.__set__("logger", mockobjects.mockLogger);
+describe('lib/CommandLib', function() {
+    let cmdLib = require('../lib/CommandLib');
 
-    describe('#Servant', function() {
+    describe('Answer', function() {
 
-        it('creates commands', function() {
-            let servant = new cmd.Servant('');
-            servant.createCommand(mockobjects.mockCommand, mockobjects.mockCommand.textReply);
-            assert(servant.commands['test']);
-            servant.createCommand(mockobjects.mockCommand, mockobjects.mockCommand.promiseReply);
-            assert(servant.commands['test']);
-            servant.createCommand(mockobjects.mockCommand, mockobjects.mockCommand.richEmbedReply);
-            assert(servant.commands['test']);
+        it('evaluates synchronous', async function() {
+            let answer = new cmdLib.Answer(() => 'RESPONSE');
+            assert((await answer.evaluate({}, {}, {})) === 'RESPONSE');
         });
 
-        it('removes commands', function() {
-            let servant = new cmd.Servant('');
-            servant.createCommand(mockobjects.mockCommand, mockobjects.mockCommand.textReply);
-            assert(servant.commands['test']);
-            servant.removeCommand('test');
-            assert(!servant.commands['test']);
-        });
-
-        it('parses commands', function() {
-            let spy = sinon.spy();
-            let servant = new cmd.Servant('');
-            servant.createCommand(mockobjects.mockCommand, spy);
-            assert(servant.commands['test']);
-            assert(!spy.called);
-            servant.parseCommand({
-                content: 'test',
-                author: {
-                    tag: undefined
-                }
+        it('evaluates asynchronous', async function() {
+            let answer = new cmdLib.Answer(async () => {
+                return 'RESPONSE';
             });
-            assert(spy.called);
+            assert((await answer.evaluate({}, {}, {})) === 'RESPONSE');
+        })
+    });
+
+    describe('Command', function() {
+
+        it('answers with Answer objects', async function() {
+            let cmd = new cmdLib.Command({
+                name: 'TEST',
+                prefix: '',
+                description: 'TESTDESCRIPTION',
+                permission: 'TESTPERM',
+                usage: 'TESTUSAGE'
+            },new cmdLib.Answer(() => 'RESPONSE'));
+            assert((await cmd.answer({}, {}, {})) === 'RESPONSE');
         });
+
+        it('generates help for itself', function() {
+            let cmd = new cmdLib.Command({
+                name: 'TEST',
+                prefix: '',
+                description: 'TESTDESCRIPTION',
+                permission: 'TESTPERM',
+                usage: 'TESTUSAGE'
+            },new cmdLib.Answer(() => 'RESPONSE'));
+            assert(cmd.help);
+        })
     });
 });
 
-describe('lib/guilding', function*() { // deactivated because of problems with sqlite3 and rewire
-    const guilding = rewire('../lib/guilding');
-    const servercommands = require('../commands/servercommands');
-    guilding.__set__("sqliteAsync", null);
-    guilding.__set__("fs-extra", {
-        ensureDir: async() => {
-            return true;
-        }
+describe('lib/MessageLib', function() {
+    let msgLib = require('../lib/MessageLib');
+
+    describe('MessageHandler', function() {
+       it ('parses a command syntax', function() {
+           let msgHandler = new msgLib.MessageHandler({
+               on: () => {}
+           });
+           let parsedSyntax = msgHandler.parseSyntaxString('_help cmd&& _ping; _uptime');
+           assert(parsedSyntax.length === 2);
+           assert(parsedSyntax[0].length === 2);
+           assert(parsedSyntax[1].length === 1);
+       });
     });
-    guilding.setLogger(mockobjects.mockLogger);
 
-    describe('#GuildHandler', function() {
-
-        it('initializes', function() {
-            let gh = new guilding.GuildHandler('test', '');
-            gh.db = new mockobjects.MockDatabase('', ()=>{});
-            gh.createTables();
-            gh.registerMusicCommands();
-            gh.ready = true;
-            assert(gh.ready);
-        });
-
-        it('destroyes itself', function() {
-            let gh = new guilding.GuildHandler('test', '');
-            gh.db = new mockobjects.MockDatabase('', ()=>{});
-            gh.createTables();
-            gh.registerMusicCommands();
-            gh.ready = true;
-            gh.destroy();
-            assert(!gh.dj.conn);
-        });
-
-        it('answers messages', function() {
-            let gh = new guilding.GuildHandler('test', '');
-            gh.db = new mockobjects.MockDatabase('', ()=>{});
-            gh.createTables();
-            gh.registerMusicCommands();
-            gh.ready = true;
-            let msgSpy = sinon.spy();
-            gh.answerMessage({
-                content: 'test',
-                author: {
-                    tag: undefined
-                },
-                reply: msgSpy,
-                channel: {
-                    send: msgSpy
-                }
-            }, 'Answer');
-            assert(msgSpy.called);
-        });
-
-        it('handles messages', function() {
-            let gh = new guilding.GuildHandler('test', '~');
-            gh.db = new mockobjects.MockDatabase('', ()=>{});
-            gh.ready = true;
-            let cbSpy = sinon.spy();
-            gh.servant.createCommand(mockobjects.mockCommand, cbSpy);
-            assert(gh.servant.commands['~test']);
-            gh.handleMessage({
-                content: '~test',
-                author: {
-                    tag: undefined
-                }});
-            assert(cbSpy.called);
-        });
-
-        it('connects and plays', function(done) {
-            const music = rewire('../lib/music');
-            const Readable = require('stream').Readable;
-
-            music.__set__("logger", mockobjects.mockLogger);
-            music.__set__("yttl", (id, cb) => {
-                cb(null, 'test');
-            });
-            music.__set__('ytdl', () => {
-                let s = new Readable();
-                s._read = () => {};
-                s.push('chunkofdataabc');
-                s.push(null);
-                return s;
-            });
-            let gh = new guilding.GuildHandler('test', '~');
-            gh.db = new mockobjects.MockDatabase('', ()=>{});
-            gh.ready = true;
-            gh.musicPlayer = new music.DJ(mockobjects.mockVoicechannel);
-            gh.connectAndPlay(mockobjects.mockVoicechannel, 'test', false).then(() => {
-                done();
-            });
-        });
-
-        it('handles all servercommands', function() {
-            let gh = new guilding.GuildHandler('test', '~');
-            gh.db = new mockobjects.MockDatabase('', ()=>{});
-            gh.registerMusicCommands();
-            gh.ready = true;
-            let msgSpy = sinon.spy();
-            let msg = {
-                content: 'test',
-                author: {
-                    tag: undefined
-                },
-                reply: msgSpy,
-                channel: {
-                    send: msgSpy
-                }
-            };
-
-            for (let category of Object.keys(servercommands))
-                for (let command of Object.keys(servercommands[category])) {
-                    msg.content = '~' + command;
-                    gh.handleMessage(msg);
-                }
-
-
-            assert(msgSpy.called);
-        });
-    });
 });
