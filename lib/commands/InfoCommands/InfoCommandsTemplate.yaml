@@ -32,3 +32,12 @@ guilds:
     Answers with the number of guilds the bot has joined
   permission: owner
   category: Info
+
+help:
+  name: help
+  description: >
+    Shows help for bot ocmmands.
+  permission: all
+  category: Info
+  args:
+    - command

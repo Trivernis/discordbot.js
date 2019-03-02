@@ -3,8 +3,8 @@ anime_search:
   permission: all
   usage: anime [search query]
   description: >
-    Searches AniList.co for the anime Title and returns information about
-    it if there is an result.
+    Searches AniList.co for the anime title and returns information about
+    it if there is a result.
   category: AniList
   response:
     not_found: >
@@ -15,8 +15,8 @@ manga_search:
   permission: all
   usage: manga [search query]
   description: >
-    Searches AniList.co for the manga Title and returns information about
-    it if there is an result.
+    Searches AniList.co for the manga title and returns information about
+    it if there is a result.
   category: AniList
   response:
     not_found: >

@@ -72,7 +72,11 @@ class Bot {
         await this.messageHandler
             .registerCommandModule(require('./lib/commands/UtilityCommands').module, {bot: this, logger: logger, config: config});
         await this.messageHandler
-            .registerCommandModule(require('./lib/commands/InfoCommands').module, {client: this.client});
+            .registerCommandModule(require('./lib/commands/InfoCommands').module, {client: this.client, messageHandler: this.messageHandler});
+        await this.messageHandler
+            .registerCommandModule(require('./lib/commands/MusicCommands').module,                {getGuildHandler: (g) => {
+                    return this.getGuildHandler(g, prefix);
+                }, logger: logger})
         //this.registerCommands();
         this.registerCallbacks();
         cmd.init(prefix);

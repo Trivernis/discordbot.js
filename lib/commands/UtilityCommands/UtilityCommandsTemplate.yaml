@@ -14,14 +14,14 @@ add_presence:
   usage: addpresence [presence]
 
 rotate_presence:
-  name: rotate_presence
+  name: rotatepresence
   description: >
     Forces a presence rotation
   permission: owner
   category: Utility
 
 create_user:
-  name: create_user
+  name: createuser
   description: >
     Creates a user for the webinterface.
   permission: owner
