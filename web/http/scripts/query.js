@@ -60,7 +60,7 @@ function queryGuilds() {
                     guilds {
                         id
                         name
-                        dj {
+                        musicPlayer {
                             playing
                         }
                     }
@@ -71,8 +71,8 @@ function queryGuilds() {
             if ($(`option[value=${guild.id}]`).length === 0) {
                 let option = document.createElement('option');
                 option.setAttribute('value', guild.id);
-                if (guild.dj)
-                    option.innerText = guild.dj.playing? guild.name + ' 🎶' : guild.name;
+                if (guild.musicPlayer)
+                    option.innerText = guild.musicPlayer.playing? guild.name + ' 🎶' : guild.name;
                 let guildSelect = document.querySelector('#guild-select');
                 guildSelect.appendChild(option);
             }
@@ -118,7 +118,7 @@ function queryGuildStatus(guildId) {
     let query = `{
                 client {
                     guilds(id: "${guildId}") {
-                        dj {
+                        musicPlayer {
                             playing
                             connected
                             repeat
@@ -144,29 +144,29 @@ function queryGuildStatus(guildId) {
             }`;
     postQuery(query).then((res) => {
         let guild = res.data.client.guilds[0];
-        document.querySelector('#dj-repeat').innerText = guild.dj.repeat? 'on': 'off';
-        document.querySelector('#guild-djStatus').innerText = guild.dj.connected? 'connected' : 'disconnected';
-        if (guild.dj.connected) {
-            let songinfoContainer = $('#dj-songinfo');
+        document.querySelector('#mp-repeat').innerText = guild.musicPlayer.repeat? 'on': 'off';
+        document.querySelector('#guild-mpStatus').innerText = guild.musicPlayer.connected? 'connected' : 'disconnected';
+        if (guild.musicPlayer.connected) {
+            let songinfoContainer = $('#mp-songinfo');
             songinfoContainer.show();
-            document.querySelector('#guild-djStatus').innerText = guild.dj.playing? 'playing' : 'connected';
-            document.querySelector('#dj-voiceChannel').innerText = guild.dj.voiceChannel;
+            document.querySelector('#guild-mpStatus').innerText = guild.musicPlayer.playing? 'playing' : 'connected';
+            document.querySelector('#mp-voiceChannel').innerText = guild.musicPlayer.voiceChannel;
 
 
-            if (guild.dj.playing) {
+            if (guild.musicPlayer.playing) {
                 if (songinfoContainer.is(':hidden'))
                     songinfoContainer.show();
-                document.querySelector('#guild-djStatus').innerText = guild.dj.paused? 'paused' : 'playing';
-                document.querySelector('#songinfo-container').setAttribute('href', guild.dj.currentSong.url);
-                document.querySelector('#dj-songname').innerText = guild.dj.currentSong.name;
-                document.querySelector('#dj-songImg').setAttribute('src', guild.dj.currentSong.thumbnail.replace('maxresdefault', 'mqdefault'));
-                let songSd = getSplitDuration(Date.now() - guild.dj.songStartTime);
-                document.querySelector('#dj-songCurrentTS').innerText = `${songSd.minutes}:${songSd.seconds.toString().padStart(2, '0')}`;
-                document.querySelector('#dj-songCurrentTS').setAttribute('start-ts', guild.dj.songStartTime);
-                document.querySelector('#dj-queueCount').innerText = guild.dj.queueCount;
-                let songContainer = document.querySelector('#dj-songQueue');
+                document.querySelector('#guild-mpStatus').innerText = guild.musicPlayer.paused? 'paused' : 'playing';
+                document.querySelector('#songinfo-container').setAttribute('href', guild.musicPlayer.currentSong.url);
+                document.querySelector('#mp-songname').innerText = guild.musicPlayer.currentSong.name;
+                document.querySelector('#mp-songImg').setAttribute('src', guild.musicPlayer.currentSong.thumbnail.replace('maxresdefault', 'mqdefault'));
+                let songSd = getSplitDuration(Date.now() - guild.musicPlayer.songStartTime);
+                document.querySelector('#mp-songCurrentTS').innerText = `${songSd.minutes}:${songSd.seconds.toString().padStart(2, '0')}`;
+                document.querySelector('#mp-songCurrentTS').setAttribute('start-ts', guild.musicPlayer.songStartTime);
+                document.querySelector('#mp-queueCount').innerText = guild.musicPlayer.queueCount;
+                let songContainer = document.querySelector('#mp-songQueue');
                 $('.songEntry').remove();
-                for (let song of guild.dj.queue) {
+                for (let song of guild.musicPlayer.queue) {
                     let songEntry = document.createElement('a');
                     songEntry.setAttribute('href', song.url);
                     songEntry.setAttribute('class', 'songEntry');
@@ -179,14 +179,14 @@ function queryGuildStatus(guildId) {
                     songEntry.appendChild(nameEntry);
                     songContainer.appendChild(songEntry);
                 }
-                document.querySelector('#dj-queueDisplayCount').innerText = document.querySelectorAll('.songEntry').length;
+                document.querySelector('#mp-queueDisplayCount').innerText = document.querySelectorAll('.songEntry').length;
             } else {
                 if (songinfoContainer.is(':not(:hidden)'))
                     songinfoContainer.hide();
             }
         } else {
-            $('#dj-songinfo').hide();
-            document.querySelector('#dj-voiceChannel').innerText = 'None';
+            $('#mp-songinfo').hide();
+            document.querySelector('#mp-voiceChannel').innerText = 'None';
         }
     });
 }
@@ -302,7 +302,7 @@ function startUpdating() {
         queryGuild(guildId);
     });
     setInterval(() => {
-        let songSd = getSplitDuration(Date.now() - $('#dj-songCurrentTS').attr('start-ts'));
-        document.querySelector('#dj-songCurrentTS').innerText = `${songSd.minutes}:${songSd.seconds.toString().padStart(2, '0')}`;
+        let songSd = getSplitDuration(Date.now() - $('#mp-songCurrentTS').attr('start-ts'));
+        document.querySelector('#mp-songCurrentTS').innerText = `${songSd.minutes}:${songSd.seconds.toString().padStart(2, '0')}`;
     }, 500);
 }

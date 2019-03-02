@@ -26,7 +26,7 @@ type GuildMember {
     roles(first: Int = 10, offset: Int = 0, id: String): [Role]
     highestRole: Role
 }
-type DJ {
+type MusicPlayer {
     queue(first: Int = 10, offset: Int = 0, id: String): [MediaEntry]
     queueCount: Int!
     songStartTime: String
@@ -44,7 +44,7 @@ type Guild {
     discordId: String
     name: String
     owner: GuildMember
-    dj: DJ
+    musicPlayer: MusicPlayer
     members(first: Int = 10, offset: Int = 0, id: String): [GuildMember]
     memberCount: Int!
     roles(first: Int = 10, offset: Int = 0, id: String): [Role]

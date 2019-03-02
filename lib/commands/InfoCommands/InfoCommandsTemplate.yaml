@@ -39,5 +39,6 @@ help:
     Shows help for bot ocmmands.
   permission: all
   category: Info
+  embed_color: 0xffffff
   args:
     - command

@@ -2,12 +2,10 @@ const Discord = require("discord.js"),
     fs = require('fs-extra'),
     logger = require('./lib/logging').getLogger(),
     msgLib = require('./lib/MessageLib'),
-    cmd = require("./lib/cmd"),
     guilding = require('./lib/guilding'),
     utils = require('./lib/utils'),
     config = require('./config.json'),
     args = require('args-parser')(process.argv),
-    waterfall = require('promise-waterfall'),
     sqliteAsync = require('./lib/sqliteAsync'),
     authToken = args.token || config.api.botToken,
     prefix = args.prefix || config.prefix || '~',
@@ -15,21 +13,26 @@ const Discord = require("discord.js"),
 
 let weblib = null;
 
+/**
+ * The Bot class handles the initialization and Mangagement of the Discord bot and
+ * is the main class.
+ */
 class Bot {
+
     constructor() {
         this.client = new Discord.Client({autoReconnect: true});
-        this.mention = false;
         this.rotator = null;
         this.maindb = null;
         this.presences = [];
         this.messageHandler = new msgLib.MessageHandler(this.client, logger);
-        this.guildHandlers = [];
-        this.userRates = {};
+        this.guildHandlers = {};
 
         logger.verbose('Verifying config');
 
         let configVerifyer = new utils.ConfigVerifyer(config, [
-            "api.botToken", "api.youTubeApiKey"
+            "api.botToken", "api.youTubeApiKey",
+            "commandSettings.maxSequenceParallel",
+            "commandSettings.maxSequenceSerial"
         ]);
         if (!configVerifyer.verifyConfig(logger))
             if (!args.i) {
@@ -38,7 +41,6 @@ class Bot {
                     process.exit(1);
                 });
             }
-        cmd.setLogger(logger);
         guilding.setLogger(logger);
     }
 
@@ -64,7 +66,7 @@ class Bot {
         });
         await this.initializeDatabase();
 
-        if (config.webservice && config.webservice.enabled)
+        if (config.webinterface && config.webinterface.enabled)
             await this.initializeWebserver();
         logger.verbose('Registering commands');
         await this.messageHandler
@@ -74,12 +76,18 @@ class Bot {
         await this.messageHandler
             .registerCommandModule(require('./lib/commands/InfoCommands').module, {client: this.client, messageHandler: this.messageHandler});
         await this.messageHandler
-            .registerCommandModule(require('./lib/commands/MusicCommands').module,                {getGuildHandler: (g) => {
-                    return this.getGuildHandler(g, prefix);
-                }, logger: logger})
-        //this.registerCommands();
-        this.registerCallbacks();
-        cmd.init(prefix);
+            .registerCommandModule(require('./lib/commands/MusicCommands').module, {
+                getGuildHandler: async (g) => await this.getGuildHandler(g),
+                logger: logger
+            });
+        await this.messageHandler
+            .registerCommandModule(require('./lib/commands/ServerUtilityCommands').module, {
+                getGuildHandler: async (g) => await this.getGuildHandler(g),
+                logger: logger,
+                messageHandler: this.messageHandler,
+                config: config
+            });
+        this.registerEvents();
     }
 
     /**
@@ -120,10 +128,10 @@ class Bot {
      */
     async initializeWebserver() {
         logger.verbose('Importing weblib');
-        weblib = require('./lib/weblib');
+        weblib = require('./lib/WebLib');
         weblib.setLogger(logger);
         logger.verbose('Creating WebServer');
-        this.webServer = new weblib.WebServer(config.webservice.port || 8080);
+        this.webServer = new weblib.WebServer(config.webinterface.port || 8080);
         logger.debug('Setting Reference Objects to webserver');
 
         await this.webServer.setReferenceObjects({
@@ -131,7 +139,7 @@ class Bot {
             presences: this.presences,
             maindb: this.maindb,
             prefix: prefix,
-            getGuildHandler: (guild) => this.getGuildHandler(guild, prefix),
+            getGuildHandler: async (g) => await this.getGuildHandler(g),
             guildHandlers: this.guildHandlers
         });
     }
@@ -173,14 +181,6 @@ class Bot {
     }
 
     /**
-     * registeres global commands
-     */
-    registerCommands() {
-        cmd.registerUtilityCommands(prefix, this);
-        cmd.registerInfoCommands(prefix, this);
-    }
-
-    /**
      * changes the presence of the bot by using one stored in the presences array
      */
     rotatePresence() {
@@ -198,7 +198,7 @@ class Bot {
     /**
      * Registeres callbacks for client events message and ready
      */
-    registerCallbacks() {
+    registerEvents() {
         this.client.on('error', (err) => {
             logger.error(err.message);
             logger.debug(err.stack);
@@ -217,93 +217,27 @@ class Bot {
             });
         });
 
-        /*
-        this.client.on('message', async (msg) => {
-            try {
-                if (msg.author === this.client.user) {
-                    logger.verbose(`ME: ${msg.content}`);
-                    return;
-                }
-                if (this.checkRate(msg.author.tag)) {
-                    logger.verbose(`<${msg.author.tag}>: ${msg.content}`);
-                    if (!msg.guild) {
-                        let reply = cmd.parseMessage(msg);
-                        await this.answerMessage(msg, reply);
-                    } else {
-                        let gh = await this.getGuildHandler(msg.guild, prefix);
-                        await gh.handleMessage(msg);
-                    }
-                    if (((Date.now() - this.userRates[msg.author.tag].last)/1000) > (config.rateLimitTime || 10))
-                        this.userRates[msg.author.tag].count = 0;
-                    else
-                        this.userRates[msg.author.tag].count++;
-                    this.userRates[msg.author.tag].last = Date.now();
-                    this.userRates[msg.author.tag].reached = false;
-                } else if (!this.userRates[msg.author.tag].reached) {
-                    logger.verbose(`${msg.author.tag} reached it's rate limit.`);
-                    this.userRates[msg.author.tag].reached = true;
-                }
-            } catch (err) {
-                logger.error(err.message);
-                logger.debug(err.stack);
-            }
-        });*/
-
         this.client.on('voiceStateUpdate', async (oldMember, newMember) => {
-            let gh = await this.getGuildHandler(newMember.guild, prefix);
+            let gh = await this.getGuildHandler(newMember.guild);
 
             if (newMember.user === this.client.user) {
                 if (newMember.voiceChannel)
-                    gh.dj.updateChannel(newMember.voiceChannel);
+                    gh.musicPlayer.updateChannel(newMember.voiceChannel);
             } else {
-                if (oldMember.voiceChannel === gh.dj.voiceChannel || newMember.voiceChannel === gh.dj.voiceChannel)
-                    gh.dj.checkListeners();
+                if (oldMember.voiceChannel === gh.musicPlayer.voiceChannel || newMember.voiceChannel === gh.musicPlayer.voiceChannel)
+                    gh.musicPlayer.checkListeners();
             }
         });
     }
 
     /**
-     * Returns true if the user has not reached it's rate limit.
-     * @param usertag
-     * @returns {boolean}
-     */
-    checkRate(usertag) {
-        if (!this.userRates[usertag])
-            this.userRates[usertag] = {last: Date.now(), count: 0};
-        return ((Date.now() - this.userRates[usertag].last)/1000) > (config.rateLimitTime || 10) ||
-            this.userRates[usertag].count < (config.rateLimitCount || 5);
-    }
-
-    /**
-     * Sends the answer recieved from the commands callback.
-     * Handles the sending differently depending on the type of the callback return
-     * @param msg
-     * @param answer
-     */
-    async answerMessage(msg, answer) {
-        if (answer instanceof Discord.RichEmbed) {
-            (this.mention) ? msg.reply('', answer) : msg.channel.send('', answer);
-        } else if (answer instanceof Promise) {
-            let resolvedAnswer = await  answer;
-            await this.answerMessage(msg, resolvedAnswer);
-        } else if (answer instanceof Array) {
-            await waterfall(answer.map((x) => async () => await this.answerMessage(msg, x))); // execute each after another
-        } else if ({}.toString.call(answer) === '[object Function]') {
-            await this.answerMessage(msg, answer());
-        } else if (answer) {
-            (this.mention) ? msg.reply(answer) : msg.channel.send(answer);
-        }
-    }
-
-    /**
      * Returns the guild handler by id, creates one if it doesn't exist and returns it then
-     * @param guild
-     * @param prefix
+     * @param guild {Guild}
      * @returns {*}
      */
-    async getGuildHandler(guild, prefix) {
+    async getGuildHandler(guild) {
         if (!this.guildHandlers[guild.id]) {
-            let newGuildHandler = new guilding.GuildHandler(guild, prefix);
+            let newGuildHandler = new guilding.GuildHandler(guild);
             await newGuildHandler.initDatabase();
             this.guildHandlers[guild.id] = newGuildHandler;
         }
@@ -314,7 +248,7 @@ class Bot {
 
 // Executing the main function
 if (typeof require !== 'undefined' && require.main === module) {
-    logger.info("Starting up... ");  // log the current date so that the logfile is better to read.
+    logger.info("Starting up... ");
     logger.debug('Calling constructor...');
     let discordBot = new Bot();
     logger.debug('Initializing services...');

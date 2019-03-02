@@ -201,7 +201,7 @@ describe('lib/music', function() {
         "api": {}
     });
 
-    describe('#DJ', function () {
+    describe('#MusicPlayer', function () {
 
         it('connects to a VoiceChannel', function (done) {
             let dj = new music.DJ(mockobjects.mockVoicechannel);
@@ -456,7 +456,7 @@ describe('lib/guilding', function*() { // deactivated because of problems with s
             let gh = new guilding.GuildHandler('test', '~');
             gh.db = new mockobjects.MockDatabase('', ()=>{});
             gh.ready = true;
-            gh.dj = new music.DJ(mockobjects.mockVoicechannel);
+            gh.musicPlayer = new music.DJ(mockobjects.mockVoicechannel);
             gh.connectAndPlay(mockobjects.mockVoicechannel, 'test', false).then(() => {
                 done();
             });
