@@ -1,6 +1,6 @@
 {
   "name": "discordbot",
-  "version": "0.10.1",
+  "version": "0.11.0",
   "scripts": {
     "start": "node bot.js",
     "test": "mocha --exit",
