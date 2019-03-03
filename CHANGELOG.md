@@ -27,6 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - changed interface to fit the new graphql schema
 - changed module export definition to `Object.assign(exports, {...})` at the end of the module file
 - added section `commandSettings` to config.js file
+- added module information to webinterface log
 
 ### Removed
 - removed lib/cmd because all functionalities are now adapted to the MessageHandler and CommadnHandlers

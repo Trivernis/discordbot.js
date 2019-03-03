@@ -246,19 +246,19 @@ class Bot {
 
 // Executing the main function
 if (typeof require !== 'undefined' && require.main === module) {
-    let logger = logging.logger;
-    logger.info("Starting up... ", {m: 'bot.init'});
-    logger.debug('Calling constructor...', {m: 'bot.init'});
+    let logger = new logging.Logger('MAIN-init');
+    logger.info("Starting up... ");
+    logger.debug('Calling constructor...');
     let discordBot = new Bot();
-    logger.debug('Initializing services...', {m: 'bot.init'});
+    logger.debug('Initializing services...');
     discordBot.initServices().then(() => {
-        logger.debug('Starting Bot...', {m: 'bot.init'});
+        logger.debug('Starting Bot...');
         discordBot.start().catch((err) => { //eslint-disable-line promise/no-nesting
-            logger.error(err.message, {m: 'bot.init'});
-            logger.debug(err.stack, {m: 'bot.init'});
+            logger.error(err.message);
+            logger.debug(err.stack);
         });
     }).catch((err) => {
-        logger.error(err.message, {m: 'bot.init'});
-        logger.debug(err.stack, {m: 'bot.init'});
+        logger.error(err.message);
+        logger.debug(err.stack);
     });
 }

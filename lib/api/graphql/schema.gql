@@ -73,6 +73,7 @@ type LogEntry {
     message: String
     level: String
     timestamp: String
+    module: String
 }
 type Query {
     client: Client

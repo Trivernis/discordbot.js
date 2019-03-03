@@ -34,6 +34,18 @@ mediaAdditionalMetadata: |
         }
     }
 
+staffFields: |
+    fragment staffFields on Media {
+        staff {
+            edges {
+                node {
+                    ...staffMetadata
+                }
+                role
+            }
+        }
+    }
+
 staffMetadata: |
     fragment staffMetadata on Staff {
         id
@@ -48,16 +60,4 @@ staffMetadata: |
         }
         language
         siteUrl
-    }
-
-staffFields: |
-    fragment staffFields on Media {
-        staff {
-            edges {
-                node {
-                    ...staffMetadata
-                }
-                role
-            }
-        }
     }

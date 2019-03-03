@@ -240,6 +240,7 @@ function queryLogs(count) {
 					level
 					message
 					timestamp
+					module
                 }
             }`;
     postQuery(query).then((res) => {
@@ -256,6 +257,10 @@ function queryLogs(count) {
                 lvlSpan.innerText = logEntry.level;
                 lvlSpan.setAttribute('class', 'text-left');
                 infoDiv.appendChild(lvlSpan);
+                let moduleSpan = document.createElement('span');
+                moduleSpan.innerText = logEntry.module;
+                moduleSpan.setAttribute('class', 'text-left');
+                infoDiv.appendChild(moduleSpan);
                 let tsSpan = document.createElement('span');
                 tsSpan.setAttribute('timestamp', logEntry.timestamp);
                 tsSpan.innerText = moment(logEntry.timestamp, 'YY-MM-DD-HH-mm-ss').format('MMM Do HH:mm:ss');
