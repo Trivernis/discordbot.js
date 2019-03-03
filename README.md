@@ -36,6 +36,10 @@ The arguments are optional because the token and youtube-api-key that the bot ne
       "keyFile": "PATH TO YOUR SSL KEY FILE",
       "certFile": "PATH TO YOUR SSL CERTIFICATE FILE"
     }
+  },
+  "commandSettings": {
+    "maxSequenceParallel": 5, // the maximum number of commands executed in parallel
+    "maxSequenceSerial": 10 // the maximum number of commands executed in serial
   }
 }
 ```
@@ -63,6 +67,7 @@ At the moment the bot can...
 - [x] ...log stuff in a database
 - [x] ...execute multiple commands as a sequence
 - [x] ...save command sequences with a given name
+- [x] ...query AniList
 - [ ] ...transform into a cow
 
 Presences
@@ -76,15 +81,19 @@ Command Sequences
 A command sequence is a single message with several commands seperated by a semicolon.
  In a sequence the command can be ommitted if it is the same as the previous one.
  That means you can add several videos to the queue and shuffle it afterwards with the sequence
- `~play [video1]; [video2]; [video3]; ~shuffle`.
+ `~play [video1] && ~play [video2]; ~play [video3] && ~shuffle`.
  
- A command sequence can be saved with `~savecmd [sequence] [commandname]`. 
- In this case the semicolon must be escaped with a backslash so it won't get interpreted as a seperate command.
+ A command sequence can be saved with `~savecmd [commandname] [sequence]`. 
+ In this case the semicolon must be escaped with a backslash so it won't get interpreted as a seperate command. You can also escape sequences with `~play "whatever &&; you want"` (doublequotes). Command sequences with `&&` are executed in serial while command sequences with `;` are executed in parallel.
  A saved command can be executed with `~execute [commandname]`.
+
+References
+---
+
+You can test a running version of the bot. [Invite bot server](https://discordapp.com/oauth2/authorize?client_id=374703138575351809&scope=bot&permissions=1983380544)
 
 Ideas
 ---
 - command replies saved in file (server specific file and global file)
 - reddit api
-- anilist api
 - othercoolstuff api

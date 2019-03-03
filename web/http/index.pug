@@ -50,30 +50,30 @@ head
                     span.label.text-right Member Count:
                     span#guild-memberCount.text-left
                 .space
-                h3.cell DJ
+                h3.cell MusicPlayer
                 .cell
                     span.label.text-right State:
-                    span#guild-djStatus.text-left
+                    span#guild-mpStatus.text-left
                 .cell
                     span.label.text-right Repeat:
-                    span#dj-repeat.text-left
+                    span#mp-repeat.text-left
                 .cell
                     span.label.text-right Voice Channel:
-                    span#dj-voiceChannel.text-left
-            #dj-songinfo.listContainer(style='display: none')
+                    span#mp-voiceChannel.text-left
+            #mp-songinfo.listContainer(style='display: none')
                 a#songinfo-container
-                    span#dj-songname
-                    img#dj-songImg(src='' alt='')
-                    #dj-songProgress(style='display:none')
-                        span#dj-songCurrentTS
-                #dj-queue-container
+                    span#mp-songname
+                    img#mp-songImg(src='' alt='')
+                    #mp-songProgress(style='display:none')
+                        span#mp-songCurrentTS
+                #mp-queue-container
                     span.cell.label(id='Queue Song count')
-                        span#dj-queueCount
+                        span#mp-queueCount
                         |  Songs in Queue
                     span.cell
                         | Next
-                        span#dj-queueDisplayCount 0
+                        span#mp-queueDisplayCount 0
                         |  Songs:
-                    #dj-songQueue
+                    #mp-songQueue
 script.
     startUpdating();

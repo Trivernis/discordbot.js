@@ -1,0 +1,44 @@
+about:
+  name: about
+  description: >
+    Shows information about this Discord Bot.
+  permission: all
+  category: Info
+  response:
+    about_icon: |
+      This icon war created by [blackrose14344](https://www.deviantart.com/blackrose14344).
+      [Original](https://www.deviantart.com/blackrose14344/art/2B-Chi-B-685771489)
+    about_creator: |
+      This bot was created by Trivernis.
+      More about this bot [here](https://github.com/Trivernis/discordbot.js).
+
+ping:
+  name: ping
+  description: >
+    Answers with the current average ping of the bot.
+  permission: all
+  category: Info
+
+uptime:
+  name: uptime
+  description: >
+    Answers with the uptime of the bot.
+  permission: all
+  category: Info
+
+guilds:
+  name: guilds
+  description: >
+    Answers with the number of guilds the bot has joined
+  permission: owner
+  category: Info
+
+help:
+  name: help
+  description: >
+    Shows help for bot ocmmands.
+  permission: all
+  category: Info
+  embed_color: 0xffffff
+  args:
+    - command

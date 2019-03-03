@@ -1,0 +1,63 @@
+mediaMetadata: |
+    fragment mediaMetadata on Media {
+        id
+        siteUrl
+        title {
+            romaji
+            english
+            native
+        }
+        coverImage {
+            large
+            medium
+            color
+        }
+    }
+
+mediaAdditionalMetadata: |
+    fragment mediaAdditionalMetadata on Media {
+        status
+        description(asHtml: false)
+        format
+        genres
+        averageScore
+        favourites
+        startDate {
+            year
+            month
+            day
+        }
+        endDate {
+            year
+            month
+            day
+        }
+    }
+
+staffFields: |
+    fragment staffFields on Media {
+        staff {
+            edges {
+                node {
+                    ...staffMetadata
+                }
+                role
+            }
+        }
+    }
+
+staffMetadata: |
+    fragment staffMetadata on Staff {
+        id
+        name {
+            first
+            last
+            native
+        }
+        image {
+            large
+            medium
+        }
+        language
+        siteUrl
+    }

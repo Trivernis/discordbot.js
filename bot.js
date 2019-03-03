@@ -1,44 +1,47 @@
 const Discord = require("discord.js"),
     fs = require('fs-extra'),
-    logger = require('./lib/logging').getLogger(),
-    cmd = require("./lib/cmd"),
+    logging = require('./lib/logging'),
+    msgLib = require('./lib/MessageLib'),
     guilding = require('./lib/guilding'),
     utils = require('./lib/utils'),
     config = require('./config.json'),
     args = require('args-parser')(process.argv),
-    waterfall = require('promise-waterfall'),
     sqliteAsync = require('./lib/sqliteAsync'),
-    globcommands = require('./commands/globalcommands.json'),
     authToken = args.token || config.api.botToken,
     prefix = args.prefix || config.prefix || '~',
     gamepresence = args.game || config.presence;
 
 let weblib = null;
 
+/**
+ * The Bot class handles the initialization and Mangagement of the Discord bot and
+ * is the main class.
+ */
 class Bot {
+
     constructor() {
         this.client = new Discord.Client({autoReconnect: true});
-        this.mention = false;
+        this.logger = new logging.Logger(this);
         this.rotator = null;
         this.maindb = null;
         this.presences = [];
-        this.guildHandlers = [];
-        this.userRates = {};
+        this.messageHandler = new msgLib.MessageHandler(this.client);
+        this.guildHandlers = {};
 
-        logger.verbose('Verifying config');
+        this.logger.verbose('Verifying config');
 
         let configVerifyer = new utils.ConfigVerifyer(config, [
-            "api.botToken", "api.youTubeApiKey"
+            "api.botToken", "api.youTubeApiKey",
+            "commandSettings.maxSequenceParallel",
+            "commandSettings.maxSequenceSerial"
         ]);
-        if (!configVerifyer.verifyConfig(logger))
+        if (!configVerifyer.verifyConfig(this.logger))
             if (!args.i) {
-                logger.info('Invalid config. Exiting');
-                logger.flush().then(() => {
+                this.logger.info('Invalid config. Exiting');
+                this.logger.flush().then(() => {
                     process.exit(1);
                 });
             }
-        cmd.setLogger(logger);
-        guilding.setLogger(logger);
     }
 
     /**
@@ -46,27 +49,44 @@ class Bot {
      * @returns {Promise<void>}
      */
     async initServices() {
-        logger.verbose('Registering cleanup function');
+        this.logger.verbose('Registering cleanup function');
+
         utils.Cleanup(() => {
             for (let gh in Object.values(this.guildHandlers))
                 if (gh instanceof guilding.GuildHandler)
                     gh.destroy();
 
             this.client.destroy().then(() => {
-                logger.debug('destroyed client');
+                this.logger.debug('destroyed client');
             }).catch((err) => {
-                logger.error(err.message);
-                logger.debug(err.stack);
+                this.logger.error(err.message);
+                this.logger.debug(err.stack);
             });
             this.maindb.close();
         });
         await this.initializeDatabase();
-        if (config.webservice && config.webservice.enabled)
+
+        if (config.webinterface && config.webinterface.enabled)
             await this.initializeWebserver();
-        logger.verbose('Registering commands');
-        this.registerCommands();
-        this.registerCallbacks();
-        cmd.init(prefix);
+        this.logger.verbose('Registering commands');
+        await this.messageHandler.registerCommandModule(require('./lib/commands/AnilistApiCommands').module, {});
+        await this.messageHandler.registerCommandModule(require('./lib/commands/UtilityCommands').module, {
+            bot: this,
+            config: config
+        });
+        await this.messageHandler.registerCommandModule(require('./lib/commands/InfoCommands').module, {
+            client: this.client,
+            messageHandler: this.messageHandler
+        });
+        await this.messageHandler.registerCommandModule(require('./lib/commands/MusicCommands').module, {
+            getGuildHandler: async (g) => await this.getGuildHandler(g)
+        });
+        await this.messageHandler.registerCommandModule(require('./lib/commands/ServerUtilityCommands').module, {
+            getGuildHandler: async (g) => await this.getGuildHandler(g),
+            messageHandler: this.messageHandler,
+            config: config
+        });
+        this.registerEvents();
     }
 
     /**
@@ -75,10 +95,11 @@ class Bot {
      */
     async start() {
         await this.client.login(authToken);
-        logger.debug("Logged in");
+        this.logger.debug("Logged in");
+
         if (this.webServer) {
             this.webServer.start();
-            logger.info(`WebServer runing on port ${this.webServer.port}`);
+            this.logger.info(`WebServer runing on port ${this.webServer.port}`);
         }
     }
 
@@ -87,16 +108,17 @@ class Bot {
      * @returns {Promise<void>}
      */
     async initializeDatabase() {
-        logger.debug('Checking for ./data/ existence');
+        this.logger.debug('Checking for ./data/ existence');
         await fs.ensureDir('./data');
-        logger.verbose('Connecting to main database');
+        this.logger.verbose('Connecting to main database');
         this.maindb = new sqliteAsync.Database('./data/main.db');
         await this.maindb.init();
+
         await this.maindb.run(`${utils.sql.tableExistCreate} presences (
             ${utils.sql.pkIdSerial},
             text VARCHAR(255) UNIQUE NOT NULL
         )`);
-        logger.debug('Loading Presences...');
+        this.logger.debug('Loading Presences...');
         await this.loadPresences();
     }
 
@@ -104,19 +126,18 @@ class Bot {
      * initializes the api webserver
      */
     async initializeWebserver() {
-        logger.verbose('Importing weblib');
-        weblib = require('./lib/weblib');
-        weblib.setLogger(logger);
-        logger.verbose('Creating WebServer');
-        this.webServer = new weblib.WebServer(config.webservice.port || 8080);
-        logger.debug('Setting Reference Objects to webserver');
+        this.logger.verbose('Importing weblib');
+        weblib = require('./lib/WebLib');
+        this.logger.verbose('Creating WebServer');
+        this.webServer = new weblib.WebServer(config.webinterface.port || 8080);
+        this.logger.debug('Setting Reference Objects to webserver');
 
         await this.webServer.setReferenceObjects({
             client: this.client,
             presences: this.presences,
             maindb: this.maindb,
             prefix: prefix,
-            getGuildHandler: (guild) => this.getGuildHandler(guild, prefix),
+            getGuildHandler: async (g) => await this.getGuildHandler(g),
             guildHandlers: this.guildHandlers
         });
     }
@@ -136,7 +157,7 @@ class Bot {
             lineReader.on('line', (line) => {
                 this.maindb.run('INSERT INTO presences (text) VALUES (?)', [line], (err) => {
                     if (err)
-                        logger.warn(err.message);
+                        this.logger.warn(err.message);
 
                 });
                 this.presences.push(line);
@@ -158,115 +179,6 @@ class Bot {
     }
 
     /**
-     * registeres global commands
-     */
-    registerCommands() {
-        // useless test command
-        cmd.createGlobalCommand(prefix, globcommands.utils.say, (msg, argv, args) => {
-            return args.join(' ');
-        });
-
-        // adds a presence that will be saved in the presence file and added to the rotation
-        cmd.createGlobalCommand(prefix, globcommands.utils.addpresence, async (msg, argv, args) => {
-            let p = args.join(' ');
-            this.presences.push(p);
-
-            await this.maindb.run('INSERT INTO presences (text) VALUES (?)', [p]);
-            return `Added Presence \`${p}\``;
-        });
-
-        // shuts down the bot after destroying the client
-        cmd.createGlobalCommand(prefix, globcommands.utils.shutdown, async (msg) => {
-            try {
-                await msg.reply('Shutting down...');
-                logger.debug('Destroying client...');
-            } catch (err) {
-                logger.error(err.message);
-                logger.debug(err.stack);
-            }
-            try {
-                await this.client.destroy();
-                logger.debug('Exiting server...');
-            } catch (err) {
-                logger.error(err.message);
-                logger.debug(err.stack);
-            }
-            try {
-                await this.webServer.stop();
-                logger.debug(`Exiting Process...`);
-                process.exit(0);
-            } catch (err) {
-                logger.error(err.message);
-                logger.debug(err.stack);
-            }
-        });
-
-        // forces a presence rotation
-        cmd.createGlobalCommand(prefix, globcommands.utils.rotate, () => {
-            try {
-                this.client.clearInterval(this.rotator);
-                this.rotatePresence();
-                this.rotator = this.client.setInterval(() => this.rotatePresence(), config.presence_duration);
-            } catch (error) {
-                logger.warn(error.message);
-            }
-        });
-
-        // ping command that returns the ping attribute of the client
-        cmd.createGlobalCommand(prefix, globcommands.info.ping, () => {
-            return `Current average ping: \`${this.client.ping} ms\``;
-        });
-
-        // returns the time the bot is running
-        cmd.createGlobalCommand(prefix, globcommands.info.uptime, () => {
-            let uptime = utils.getSplitDuration(this.client.uptime);
-            return new Discord.RichEmbed().setDescription(`
-            **${uptime.days}** days
-            **${uptime.hours}** hours
-            **${uptime.minutes}** minutes
-            **${uptime.seconds}** seconds
-            **${uptime.milliseconds}** milliseconds
-        `).setTitle('Uptime');
-        });
-
-        // returns the numbe of guilds, the bot has joined
-        cmd.createGlobalCommand(prefix, globcommands.info.guilds, () => {
-            return `Number of guilds: \`${this.client.guilds.size}\``;
-        });
-
-        cmd.createGlobalCommand(prefix, globcommands.utils.createUser, (msg, argv) => {
-            return new Promise((resolve, reject) => {
-                if (msg.guild) {
-                    resolve("It's not save here! Try again via PM.");
-                } else if (argv.username && argv.scope) {
-                    logger.debug(`Creating user entry ${argv.username}, scope: ${argv.scope}`);
-
-                    this.webServer.createUser(argv.username, argv.password, argv.scope, false).then((token) => {
-                        resolve(`Created entry
-                            username: ${argv.username},
-                            scope: ${argv.scope},
-                            token: ${token}
-                        `);
-                    }).catch((err) => reject(err.message));
-                }
-            });
-        });
-
-        cmd.createGlobalCommand(prefix, globcommands.info.about, () => {
-            return new Discord.RichEmbed()
-                .setTitle('About')
-                .setDescription(globcommands.info.about.response.about_creator)
-                .addField('Icon', globcommands.info.about.response.about_icon);
-        });
-
-        cmd.createGlobalCommand(prefix, globcommands.utils.bugreport, () => {
-            return new Discord.RichEmbed()
-                .setTitle('Where to report a bug?')
-                .setDescription(globcommands.utils.bugreport.response.bug_report);
-        });
-    }
-
-    /**
      * changes the presence of the bot by using one stored in the presences array
      */
     rotatePresence() {
@@ -276,118 +188,54 @@ class Bot {
         this.client.user.setPresence({
             game: {name: `${gamepresence} | ${pr}`, type: "PLAYING"},
             status: 'online'
-        }).then(() => logger.debug(`Presence rotation to ${pr}`))
-            .catch((err) => logger.warn(err.message));
+        }).then(() => this.logger.debug(`Presence rotation to ${pr}`))
+            .catch((err) => this.logger.warn(err.message));
     }
 
 
     /**
      * Registeres callbacks for client events message and ready
      */
-    registerCallbacks() {
+    registerEvents() {
         this.client.on('error', (err) => {
-            logger.error(err.message);
-            logger.debug(err.stack);
+            this.logger.error(err.message);
+            this.logger.debug(err.stack);
         });
 
         this.client.on('ready', () => {
-            logger.info(`logged in as ${this.client.user.tag}!`);
+            this.logger.info(`logged in as ${this.client.user.tag}!`);
+
             this.client.user.setPresence({
                 game: {
                     name: gamepresence, type: "PLAYING"
                 }, status: 'online'
-            })
-                .catch((err) => {
-                    if (err)
-                        logger.warn(err.message);
-                });
-        });
-
-        this.client.on('message', async (msg) => {
-            try {
-                if (msg.author === this.client.user) {
-                    logger.verbose(`ME: ${msg.content}`);
-                    return;
-                }
-                if (this.checkRate(msg.author.tag)) {
-                    logger.verbose(`<${msg.author.tag}>: ${msg.content}`);
-                    if (!msg.guild) {
-                        let reply = cmd.parseMessage(msg);
-                        await this.answerMessage(msg, reply);
-                    } else {
-                        let gh = await this.getGuildHandler(msg.guild, prefix);
-                        await gh.handleMessage(msg);
-                    }
-                    if (((Date.now() - this.userRates[msg.author.tag].last)/1000) > (config.rateLimitTime || 10))
-                        this.userRates[msg.author.tag].count = 0;
-                    else
-                        this.userRates[msg.author.tag].count++;
-                    this.userRates[msg.author.tag].last = Date.now();
-                    this.userRates[msg.author.tag].reached = false;
-                } else if (!this.userRates[msg.author.tag].reached) {
-                    logger.verbose(`${msg.author.tag} reached it's rate limit.`);
-                    this.userRates[msg.author.tag].reached = true;
-                }
-            } catch (err) {
-                logger.error(err.message);
-                logger.debug(err.stack);
-            }
+            }).catch((err) => {
+                if (err)
+                    this.logger.warn(err.message);
+            });
         });
 
         this.client.on('voiceStateUpdate', async (oldMember, newMember) => {
-            let gh = await this.getGuildHandler(newMember.guild, prefix);
+            let gh = await this.getGuildHandler(newMember.guild);
+
             if (newMember.user === this.client.user) {
                 if (newMember.voiceChannel)
-                    gh.dj.updateChannel(newMember.voiceChannel);
+                    gh.musicPlayer.updateChannel(newMember.voiceChannel);
             } else {
-                if (oldMember.voiceChannel === gh.dj.voiceChannel || newMember.voiceChannel === gh.dj.voiceChannel)
-                    gh.dj.checkListeners();
+                if (oldMember.voiceChannel === gh.musicPlayer.voiceChannel || newMember.voiceChannel === gh.musicPlayer.voiceChannel)
+                    gh.musicPlayer.checkListeners();
             }
         });
-    }
-
-    /**
-     * Returns true if the user has not reached it's rate limit.
-     * @param usertag
-     * @returns {boolean}
-     */
-    checkRate(usertag) {
-        if (!this.userRates[usertag])
-            this.userRates[usertag] = {last: Date.now(), count: 0};
-        return ((Date.now() - this.userRates[usertag].last)/1000) > (config.rateLimitTime || 10) ||
-            this.userRates[usertag].count < (config.rateLimitCount || 5);
-    }
-
-    /**
-     * Sends the answer recieved from the commands callback.
-     * Handles the sending differently depending on the type of the callback return
-     * @param msg
-     * @param answer
-     */
-    async answerMessage(msg, answer) {
-        if (answer instanceof Discord.RichEmbed) {
-            (this.mention) ? msg.reply('', answer) : msg.channel.send('', answer);
-        } else if (answer instanceof Promise) {
-            let resolvedAnswer = await  answer;
-            await this.answerMessage(msg, resolvedAnswer);
-        } else if (answer instanceof Array) {
-            await waterfall(answer.map((x) => async () => await this.answerMessage(msg, x))); // execute each after another
-        } else if ({}.toString.call(answer) === '[object Function]') {
-            await this.answerMessage(msg, answer());
-        } else if (answer) {
-            (this.mention) ? msg.reply(answer) : msg.channel.send(answer);
-        }
     }
 
     /**
      * Returns the guild handler by id, creates one if it doesn't exist and returns it then
-     * @param guild
-     * @param prefix
+     * @param guild {Guild}
      * @returns {*}
      */
-    async getGuildHandler(guild, prefix) {
+    async getGuildHandler(guild) {
         if (!this.guildHandlers[guild.id]) {
-            let newGuildHandler = new guilding.GuildHandler(guild, prefix);
+            let newGuildHandler = new guilding.GuildHandler(guild);
             await newGuildHandler.initDatabase();
             this.guildHandlers[guild.id] = newGuildHandler;
         }
@@ -398,7 +246,8 @@ class Bot {
 
 // Executing the main function
 if (typeof require !== 'undefined' && require.main === module) {
-    logger.info("Starting up... ");  // log the current date so that the logfile is better to read.
+    let logger = new logging.Logger('MAIN-init');
+    logger.info("Starting up... ");
     logger.debug('Calling constructor...');
     let discordBot = new Bot();
     logger.debug('Initializing services...');
