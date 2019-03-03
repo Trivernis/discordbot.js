@@ -1,58 +1,57 @@
-anime_search:
-  name: alAnime
+METADATA: &METADATA
+  category: AniList
   permission: all
+
+anime_search:
+  <<: *METADATA
+  name: alAnime
   usage: alAnime [search query]
   description: >
     Searches [AniList.co](https://anilist.co) for the anime *title* or *id* and returns information about
     it if there is a result. The staff members are not included because the message would grow too big.
-  category: AniList
   response:
     not_found: >
       I couldn't find the anime you were searching for :(
 
 anime_staff_search:
+  <<: *METADATA
   name: alAnimeStaff
-  permission: all
   usage: alAnimeStaff [search query]
   description: >
     Searches [AniList.co](https://anilist.co) for the anime *title* or *id* and returns all staff members.
-  category: AniList
   response:
     not_found: >
       I couldn't find the anime you were searching for :(
 
 manga_search:
+  <<: *METADATA
   name: alManga
-  permission: all
   usage: alManga [search query]
   description: >
     Searches [AniList.co](https://anilist.co) for the manga *title* or *id* and returns information about
     it if there is a result.
-  category: AniList
   response:
     not_found: >
       I couldn't find the manga you were searching for :(
 
 staff_search:
+  <<: *METADATA
   name: alStaff
-  permission: all
   usage: alStaff [search query]
   description: >
     Searches [AniList.co](https://anilist.co) for the staff member *name* or *id* and returns information about
     the member aswell as roles in media.
-  category: AniList
   response:
     not_found: >
       I couldn't find the staff member you were searching for :(
 
 character_search:
+  <<: *METADATA
   name: alCharacter
-  permission: all
   usage: alCharacter [search query]
   description: >
     Searches [AniList.co](https://anilist.co) for the character *name* or *id* and returns information about
     the character aswell as media roles.
-  category: AniList
   response:
     not_found: >
       I couldn't find the character member you were searching for :(
