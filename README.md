@@ -36,6 +36,10 @@ The arguments are optional because the token and youtube-api-key that the bot ne
       "keyFile": "PATH TO YOUR SSL KEY FILE",
       "certFile": "PATH TO YOUR SSL CERTIFICATE FILE"
     }
+  },
+  "commandSettings": {
+    "maxSequenceParallel": 5, // the maximum number of commands executed in parallel
+    "maxSequenceSerial": 10 // the maximum number of commands executed in serial
   }
 }
 ```
