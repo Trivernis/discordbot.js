@@ -1,9 +1,13 @@
+METADATA: &METADATA
+  category: Server Utility
+  permission: all
+
 save_cmd:
+  <<: *METADATA
   name: savecmd
   description: >
     Saves a sequence of commands under a new name.
   permission: moderator
-  category: Server Utility
   usage: savecmd [cmdname] [cmdsequence]
   args:
     - name
@@ -17,30 +21,28 @@ save_cmd:
       This sequence executes too long serial chains.
 
 delete_cmd:
+  <<: *METADATA
   name: deletecmd
   description: >
     Deletes a saved command.
   permission: moderator
-  category: Server Utility
   args:
     - name
 
 saved_cmd:
+  <<: *METADATA
   name: savedcmd
   description: >
     Lists all saved commands.
-  category: Server Utility
-  permission: all
   response:
     no_commands: >
       There are no saved commands.
 
 execute:
+  <<: *METADATA
   name: execute
   description: >
     Executes a saved command.
-  permission: all
-  category: Server Utility
   args:
     - name
   response:

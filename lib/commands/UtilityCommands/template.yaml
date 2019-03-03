@@ -1,42 +1,42 @@
+METADATA: &METADATA
+  category: Utility
+  permission: owner
+
 shutdown:
+  <<: *METADATA
   name: shutdown
   description: >
     Shuts down the bot.
-  permission: owner
-  category: Utility
 
 add_presence:
+  <<: *METADATA
   name: addpresence
   description: >
     Adds a Rich Presence to the bot.
-  permission: owner
-  category: Utility
   usage: addpresence [presence]
 
 rotate_presence:
+  <<: *METADATA
   name: rotatepresence
   description: >
     Forces a presence rotation
-  permission: owner
-  category: Utility
 
 create_user:
+  <<: *METADATA
   name: createuser
   description: >
     Creates a user for the webinterface.
-  permission: owner
-  category: Utility
   args:
     - username
     - password
     - scope
 
 bugreport:
+  <<: *METADATA
   name: bug
+  permission: all
   description: >
     Get information about where to report bugs.
-  permission: all
-  category: Utility
   response:
     title: >
       You want to report a bug?

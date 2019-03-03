@@ -1,9 +1,12 @@
+METADATA: &METADATA
+  category: Music
+  permission: all
+
 play:
+  <<: *METADATA
   name: play
   description: >
     Adds the url to the YouTube video or YouTube playlist into the queue.
-  permission: all
-  category: Music
   args:
     - url
   response:
@@ -19,12 +22,11 @@ play:
       You need to join a VoiceChannel to request media playback.
 
 play_next:
+  <<: *METADATA
   name: playnext
   description: >
     Adds the url to the YouTube video or YouTube playlist into the queue as
     next playing song.
-  permission: all
-  category: Music
   args:
     - url
   response:
@@ -40,21 +42,19 @@ play_next:
       You need to join a VoiceChannel to request media playback.
 
 join:
+  <<: *METADATA
   name: join
   description: >
     Joins the VoiceChannel you are in.
-  permission: all
-  category: Music
   response:
     no_voicechannel: >
       You need to join a VoiceChannel for me to join.
 
 stop:
+  <<: *METADATA
   name: stop
   description: >
     Stops the media playback and leaves the VoiceChannel.
-  permission: all
-  category: Music
   response:
     success: >
       Stopped music playback.
@@ -62,11 +62,10 @@ stop:
       I'm not playing music at the moment. What do you want me to stop?
 
 pause:
+  <<: *METADATA
   name: pause
   description: >
     Pauses the media playback.
-  permission: all
-  category: Music
   response:
     success: >
       Paused playback.
@@ -74,11 +73,10 @@ pause:
       I'm not playing music at the moment.
 
 resume:
+  <<: *METADATA
   name: resume
   description: >
     Resumes the media playback.
-  permission: all
-  category: Music
   response:
     success: >
       Resumed playback.
@@ -86,11 +84,10 @@ resume:
       I'm not playing music at the moment.
 
 skip:
+  <<: *METADATA
   name: skip
   description: >
     Skips the currently playing song.
-  permission: all
-  category: Music
   response:
     success: >
       Skipped to the next song.
@@ -98,48 +95,44 @@ skip:
       I'm not playing music at the moment.
 
 clear:
+  <<: *METADATA
   name: clear
   description: >
     Clears the media queue.
-  permission: musicPlayer
-  category: Music
+  permission: dj
   response:
     success: >
       The media queue has been cleared.
 
 media_queue:
+  <<: *METADATA
   name: queue
   descriptions: >
     Shows the next ten songs in the media queue.
-  permission: all
-  category: Music
 
 media_current:
+  <<: *METADATA
   name: np
   description: >
     Shows the currently playing song.
-  permission: all
-  category: Music
   response:
     not_playing: >
       I'm not playing music at the moment.
 
 shuffle:
+  <<: *METADATA
   name: shuffle
   description: >
     Shuffles the media queue
-  permission: all
-  category: Music
   response:
     success: >
       The queue has been shuffled.
 
 toggle_repeat:
+  <<: *METADATA
   name: repeat
   description: >
     Toggles listening o repeat.
-  permission: all
-  category: Music
   response:
     repeat_true: >
       Listening on repeat now!
@@ -147,32 +140,31 @@ toggle_repeat:
       Not listening on repeat anymore.
 
 save_media:
+  <<: *METADATA
   name: savemedia
   description: >
     Saves the YouTube URL with a specific name.
   permission: dj
-  category: Music
   args:
     - url
   usage: savemedia [url] [name...]
 
 delete_media:
+  <<: *METADATA
   name: deletemedia
   description: >
     Deletes a saved YouTube URL from saved media.
   permission: dj
-  category: Music
   usage: deletemedia [name]
   response:
     no_name: >
       You must provide a name for the media to delete.
 
 saved_media:
+  <<: *METADATA
   name: savedmedia
   description: >
     Shows all saved YouTube URLs.
-  permission: all
-  category: Music
   response:
     no_saved: >
       There are no saved YouTube URLs :(

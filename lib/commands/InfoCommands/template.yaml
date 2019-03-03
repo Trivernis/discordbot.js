@@ -1,9 +1,12 @@
+METADATA: &METADATA
+  category: Info
+  permission: all
+
 about:
+  <<: *METADATA
   name: about
   description: >
     Shows information about this Discord Bot.
-  permission: all
-  category: Info
   response:
     about_icon: |
       This icon war created by [blackrose14344](https://www.deviantart.com/blackrose14344).
@@ -13,32 +16,50 @@ about:
       More about this bot [here](https://github.com/Trivernis/discordbot.js).
 
 ping:
+  <<: *METADATA
   name: ping
   description: >
     Answers with the current average ping of the bot.
-  permission: all
-  category: Info
 
 uptime:
+  <<: *METADATA
   name: uptime
   description: >
     Answers with the uptime of the bot.
-  permission: all
-  category: Info
-
 guilds:
+  <<: *METADATA
   name: guilds
   description: >
     Answers with the number of guilds the bot has joined
   permission: owner
-  category: Info
 
 help:
+  <<: *METADATA
   name: help
   description: >
     Shows help for bot ocmmands.
-  permission: all
-  category: Info
   embed_color: 0xffffff
   args:
     - command
+
+changes:
+  <<: *METADATA
+  name: changes
+  description: >
+    Shows the changes of the current release or a specific previous.
+  embed_color: 0xaabbcc
+  args:
+    - version
+  response:
+    not_found: >
+      I could not find the changelog for the version you were looking for.
+
+versions:
+  <<: *METADATA
+  name: versions
+  description: >
+    Shows all versions present in the CHANGELOG.
+  embed_color: 0xaabbcc
+  response:
+    not_found: >
+      I could not find any versions.

@@ -1,0 +1,16 @@
+# see yaml references (learnxinyminutes.com/docs/yaml/)
+
+METADATA: &METADATA
+  category: template      # [optional if defined in commands]
+  permission: all         # [optional if defined in commands]
+
+template_command:
+  <<: *METADATA           # include the predefined metadata for the command
+  name: templateCommand   # [required] the name of the command for execution
+  usage: _templateCommand [templateArg] # [optional] overides the default help that generates from name and args
+  permission: owner       # [optional if in METADATA] overiedes the metadata value for permission
+  description: >          # [required] the description entry for the command help.
+    A template for a command
+  response:               # [optional] predefine responses that can be used in the command logic
+    not_implemented: >
+      This command is not implemented.
