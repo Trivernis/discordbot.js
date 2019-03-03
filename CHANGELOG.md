@@ -4,7 +4,11 @@ All notable changes to the discord bot will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.11.0] - 2019-03-03
+## [Unreleased]
+### Changed
+- name of MiscCommands module from `TemplateCommandModule` to `MiscoCommandModule`
+
+## [0.11.0-beta] - 2019-03-03
 ### Changed
 - template Files to name `template.yaml`
 - loading template file form CommandModule property `templateFile` to loading the `template.yaml` file from the `_templateDir` property (still supporting loading form templateFile)
@@ -19,12 +23,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 - `ExtendedRichEmbed.addNonemptyField` because the overide of `.addField` does the same
 
-## [0.10.1] - 2019-03-03
+## [0.10.1]-beta - 2019-03-03
 ### Changed
 - Bugfix on RichEmbed not returning itself on addField and setDescription because of method overide
 - AniList CommandModule bug fix on `~alCharacter` not returning voice actor names
 
-## [0.10.0] - 2019-03-03
+## [0.10.0-beta] - 2019-03-03
 ### Added
 - AniList api commands powered by [AniList.co](https://www.anilist.co)
 - MessageHandler - handles all incoming messages, parses the syntax, executes the syntax and handles rate limits
