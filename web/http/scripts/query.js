@@ -140,7 +140,6 @@ function queryGuildStatus(guildId) {
                         }
                     }
                 }
-                config
             }`;
     postQuery(query).then((res) => {
         let guild = res.data.client.guilds[0];
