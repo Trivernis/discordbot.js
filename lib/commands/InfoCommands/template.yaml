@@ -41,3 +41,25 @@ help:
   embed_color: 0xffffff
   args:
     - command
+
+changes:
+  <<: *METADATA
+  name: changes
+  description: >
+    Shows the changes of the current release or a specific previous.
+  embed_color: 0xaabbcc
+  args:
+    - version
+  response:
+    not_found: >
+      I could not find the changelog for the version you were looking for.
+
+versions:
+  <<: *METADATA
+  name: versions
+  description: >
+    Shows all versions present in the CHANGELOG.
+  embed_color: 0xaabbcc
+  response:
+    not_found: >
+      I could not find any versions.

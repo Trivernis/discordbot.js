@@ -8,14 +8,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - template Files to name `template.yaml`
 - loading template file form CommandModule property `templateFile` to loading the `template.yaml` file from the `_templateDir` property (still supporting loading form templateFile)
+- ExtendedRichEmbed checks if fields are empty again after replacing values
 
 ### Added
 - `.template` to commands as a template for a command module with help comments
 - *METADATA* property to `template.yaml` files that is used as an anchor for shared command metadata (like `category`)
-- CommandModule misc with command that are not really fitting into any other module
+- `CommandModule` **Misc** with command that are not really fitting into any other module
+- option to query this CHANGELOG with `_changes [version]` and `_versions` in the `CommandModule` **Info**
 
 ### Removed
-
+- `ExtendedRichEmbed.addNonemptyField` because the overide of `.addField` does the same
 
 ## [0.10.1] - 2019-03-03
 ### Changed
