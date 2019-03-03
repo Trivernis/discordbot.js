@@ -86,6 +86,7 @@ class Bot {
             messageHandler: this.messageHandler,
             config: config
         });
+        await this.messageHandler.registerCommandModule(require('./lib/commands/MiscCommands').module, {});
         this.registerEvents();
     }
 

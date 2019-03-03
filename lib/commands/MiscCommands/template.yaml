@@ -1,0 +1,29 @@
+METADATA: &METADATA
+  category: Misc
+  permission: all
+
+say:
+  <<: *METADATA
+  name: say
+  usage: say [...message]
+  description: >
+    The bot says what you defined in the message argument
+
+delay:
+  <<: *METADATA
+  name: delay
+  usage: delay
+  args:
+    - seconds
+  description: >
+    Set a delay in seconds. Useful for command sequences.
+
+choose:
+  <<: *METADATA
+  name: choose
+  usage: choose [opt-1], [opt-2], ..., [opt-n]
+  description: >
+    Chooses randomly from one of the options
+  response:
+    no_options: >
+      You need to define options for me to choose from.

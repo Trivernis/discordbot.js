@@ -5,13 +5,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-### Changes
-- changed template Files to name `template.yaml`
-- changed loading template file form CommandModule property `templateFile` to loading the `template.yaml` file from the `_templateDir` property (still supporting loading form templateFile)
-- added *METADATA* property to `template.yaml` files that is used as an anchor for shared command metadata (like `category`)
+### Changed
+- template Files to name `template.yaml`
+- loading template file form CommandModule property `templateFile` to loading the `template.yaml` file from the `_templateDir` property (still supporting loading form templateFile)
 
 ### Added
-- added `.template` to commands as a template for a command module with help comments
+- `.template` to commands as a template for a command module with help comments
+- *METADATA* property to `template.yaml` files that is used as an anchor for shared command metadata (like `category`)
+- CommandModule misc with command that are not really fitting into any other module
 
 ### Removed
 
