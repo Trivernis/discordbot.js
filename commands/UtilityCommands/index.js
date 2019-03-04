@@ -1,4 +1,4 @@
-const cmdLib = require('../../CommandLib');
+const cmdLib = require('../../lib/CommandLib');
 
 /**
  * Utility commands are all commands that allow the user to control the behaviour of the

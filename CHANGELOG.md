@@ -5,8 +5,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Fixed
+- bug where the bot counts itself when calculating needed votes to skip/stop music
+- bug on the `ExtendedRichEmbed` where `addField` and `setDescription` throws an error when the value is null or undefined
+- bug on `AnilistApiCommands` where the `RichCharacterInfo` uses a nonexistent function of the `ExtendedRichEmbed`
+
 ### Changed
 - name of MiscCommands module from `TemplateCommandModule` to `MiscoCommandModule`
+- moved everything in `lib` to subfolders with the same name as the files and renamed the files to `index.js`
+- moved commands outside of `lib`
 
 ## [0.11.0-beta] - 2019-03-03
 ### Changed

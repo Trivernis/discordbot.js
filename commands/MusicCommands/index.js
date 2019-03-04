@@ -1,6 +1,6 @@
-const cmdLib = require('../../CommandLib'),
-    utils = require('../../utils'),
-    config = require('../../../config');
+const cmdLib = require('../../lib/CommandLib'),
+    utils = require('../../lib/utils'),
+    config = require('../../config');
 
 function checkPermission(msg, rolePerm) {
     if (!rolePerm || ['all', 'any', 'everyone'].includes(rolePerm))
@@ -117,7 +117,7 @@ class MusicCommandModule extends cmdLib.CommandModule {
                 let vc = gh.musicPlayer.voiceChannel || m.member.voiceChannel;
                 if (gh.musicPlayer.connected && vc) {
                     let votes = gh.updateCommandVote(stop.name, m.author.tag);
-                    let neededVotes = Math.ceil(vc.members.size/2);
+                    let neededVotes = Math.ceil((vc.members.size - 1) / 2);
 
                     if (neededVotes <= votes.count || checkPermission(m, 'dj')) {
                         this._logger.debug(`Vote passed. ${votes.count} out of ${neededVotes} for stop or permission granted`);
@@ -167,7 +167,7 @@ class MusicCommandModule extends cmdLib.CommandModule {
                 let vc = gh.musicPlayer.voiceChannel || m.member.voiceChannel;
                 if (gh.musicPlayer.playing && vc) {
                     let votes = gh.updateCommandVote(skip.name, m.author.tag);
-                    let neededVotes = Math.ceil(vc.members.size/2);
+                    let neededVotes = Math.ceil((vc.members.size - 1) / 2);
 
                     if (neededVotes <= votes.count || checkPermission(m, 'dj')) {
                         this._logger.debug(`Vote passed. ${votes.count} out of ${neededVotes} for skip or permission granted`);

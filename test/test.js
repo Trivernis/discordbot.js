@@ -13,7 +13,7 @@ mockobjects.mockLogger = {
 };
 
 describe('lib/utils', function() {
-    const utils = require('../lib/utils.js');
+    const utils = require('../lib/utils/index.js');
 
     describe('#getSplitDuration', function() {
        it('returns an object from milliseconds', function() {
@@ -28,7 +28,7 @@ describe('lib/utils', function() {
         it('returns the correct extension for a filename', function(done) {
             assert(utils.getExtension('test.txt') === '.txt');
             assert(utils.getExtension('test.tar.gz') === '.gz');
-            assert(utils.getExtension('../lib/utils.js') === '.js');
+            assert(utils.getExtension('../lib/index.js') === '.js');
             assert(utils.getExtension('.gitignore') === '.gitignore');
             done();
         });

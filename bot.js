@@ -1,12 +1,12 @@
 const Discord = require("discord.js"),
     fs = require('fs-extra'),
-    logging = require('./lib/logging'),
+    logging = require('./lib/utils/logging'),
     msgLib = require('./lib/MessageLib'),
     guilding = require('./lib/guilding'),
     utils = require('./lib/utils'),
     config = require('./config.json'),
     args = require('args-parser')(process.argv),
-    sqliteAsync = require('./lib/sqliteAsync'),
+    sqliteAsync = require('./lib/utils/sqliteAsync'),
     authToken = args.token || config.api.botToken,
     prefix = args.prefix || config.prefix || '~',
     gamepresence = args.game || config.presence;
@@ -69,24 +69,24 @@ class Bot {
         if (config.webinterface && config.webinterface.enabled)
             await this.initializeWebserver();
         this.logger.verbose('Registering commands');
-        await this.messageHandler.registerCommandModule(require('./lib/commands/AnilistApiCommands').module, {});
-        await this.messageHandler.registerCommandModule(require('./lib/commands/UtilityCommands').module, {
+        await this.messageHandler.registerCommandModule(require('./commands/AnilistApiCommands').module, {});
+        await this.messageHandler.registerCommandModule(require('./commands/UtilityCommands').module, {
             bot: this,
             config: config
         });
-        await this.messageHandler.registerCommandModule(require('./lib/commands/InfoCommands').module, {
+        await this.messageHandler.registerCommandModule(require('./commands/InfoCommands').module, {
             client: this.client,
             messageHandler: this.messageHandler
         });
-        await this.messageHandler.registerCommandModule(require('./lib/commands/MusicCommands').module, {
+        await this.messageHandler.registerCommandModule(require('./commands/MusicCommands').module, {
             getGuildHandler: async (g) => await this.getGuildHandler(g)
         });
-        await this.messageHandler.registerCommandModule(require('./lib/commands/ServerUtilityCommands').module, {
+        await this.messageHandler.registerCommandModule(require('./commands/ServerUtilityCommands').module, {
             getGuildHandler: async (g) => await this.getGuildHandler(g),
             messageHandler: this.messageHandler,
             config: config
         });
-        await this.messageHandler.registerCommandModule(require('./lib/commands/MiscCommands').module, {});
+        await this.messageHandler.registerCommandModule(require('./commands/MiscCommands').module, {});
         this.registerEvents();
     }
 
