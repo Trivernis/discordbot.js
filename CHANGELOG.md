@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - state lib with `EventRouter` and `EventGroup` and `Event` classes
+- Subclasses of EventRouter for client events groupes `Client`, `Channel`, `Message` and `Guild`
 
 ## [0.11.0-beta] - 2019-03-03
 ### Changed
