@@ -1,5 +1,5 @@
 /* template index.js. Doesn't implement actual commands */
-const cmdLib = require('../../lib/CommandLib');
+const cmdLib = require('../../lib/command');
 
 /**
  * Several commands that are that special that they can't be included in any other module.

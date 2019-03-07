@@ -1,4 +1,4 @@
-const cmdLib = require('../../lib/CommandLib'),
+const cmdLib = require('../../lib/command'),
     anilistApi = require('../../lib/api/AniListApi');
 
 /**

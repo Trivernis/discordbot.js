@@ -1,7 +1,7 @@
 const Discord = require("discord.js"),
     fs = require('fs-extra'),
     logging = require('./lib/utils/logging'),
-    msgLib = require('./lib/MessageLib'),
+    msgLib = require('./lib/message'),
     guilding = require('./lib/guilding'),
     utils = require('./lib/utils'),
     config = require('./config.json'),
@@ -128,7 +128,7 @@ class Bot {
      */
     async initializeWebserver() {
         this.logger.verbose('Importing weblib');
-        weblib = require('./lib/WebLib');
+        weblib = require('./lib/web');
         this.logger.verbose('Creating WebServer');
         this.webServer = new weblib.WebServer(config.webinterface.port || 8080);
         this.logger.debug('Setting Reference Objects to webserver');

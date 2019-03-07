@@ -1,4 +1,4 @@
-const cmdLib = require('../../lib/CommandLib'),
+const cmdLib = require('../../lib/command'),
     utils = require('../../lib/utils'),
     config = require('../../config');
 
@@ -313,5 +313,5 @@ class MusicCommandModule extends cmdLib.CommandModule {
 }
 
 Object.assign(exports, {
-    'module': MusicCommandModule
+    module: MusicCommandModule
 });

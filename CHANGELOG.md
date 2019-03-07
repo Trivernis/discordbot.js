@@ -9,11 +9,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - bug where the bot counts itself when calculating needed votes to skip/stop music
 - bug on the `ExtendedRichEmbed` where `addField` and `setDescription` throws an error when the value is null or undefined
 - bug on `AnilistApiCommands` where the `RichCharacterInfo` uses a nonexistent function of the `ExtendedRichEmbed`
+- Typo in changelog
 
 ### Changed
-- name of MiscCommands module from `TemplateCommandModule` to `MiscoCommandModule`
+- name of MiscCommands module from `TemplateCommandModule` to `MiscCommandModule`
 - moved everything in `lib` to subfolders with the same name as the files and renamed the files to `index.js`
+- renamed libfolders to lowercase and removed the lib suffix
 - moved commands outside of `lib`
+
+### Added
+- state lib with `EventRouter` and `EventGroup` and `Event` classes
 
 ## [0.11.0-beta] - 2019-03-03
 ### Changed

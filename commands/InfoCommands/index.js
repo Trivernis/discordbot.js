@@ -1,4 +1,4 @@
-const cmdLib = require('../../lib/CommandLib'),
+const cmdLib = require('../../lib/command'),
     fsx = require('fs-extra'),
     utils = require('../../lib/utils');
 

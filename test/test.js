@@ -179,7 +179,7 @@ describe('lib/utils', function() {
 
 describe('lib/music', function() {
 
-    const music = rewire('../lib/MusicLib');
+    const music = rewire('../lib/music');
     const Readable = require('stream').Readable;
 
     music.__set__("logger", mockobjects.mockLogger);
@@ -329,8 +329,8 @@ describe('lib/music', function() {
     });
 });
 
-describe('lib/CommandLib', function() {
-    let cmdLib = require('../lib/CommandLib');
+describe('lib/command', function() {
+    let cmdLib = require('../lib/command');
 
     describe('Answer', function() {
 
@@ -373,8 +373,8 @@ describe('lib/CommandLib', function() {
     });
 });
 
-describe('lib/MessageLib', function() {
-    let msgLib = require('../lib/MessageLib');
+describe('lib/message', function() {
+    let msgLib = require('../lib/message');
 
     describe('MessageHandler', function() {
        it ('parses a command syntax', function() {

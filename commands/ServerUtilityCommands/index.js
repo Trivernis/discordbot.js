@@ -1,4 +1,4 @@
-const cmdLib = require('../../lib/CommandLib');
+const cmdLib = require('../../lib/command');
 
 /**
  * This command module includes utility commands for the server.
