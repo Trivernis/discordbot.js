@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - bug where the bot counts itself when calculating needed votes to skip/stop music
 - bug on the `ExtendedRichEmbed` where `addField` and `setDescription` throws an error when the value is null or undefined
 - bug on `AnilistApiCommands` where the `RichCharacterInfo` uses a nonexistent function of the `ExtendedRichEmbed`
+- bug on`AnilistApi` where the `.gql` files couldn't be found.
 - Typo in changelog
 
 ### Changed
@@ -16,10 +17,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - moved everything in `lib` to subfolders with the same name as the files and renamed the files to `index.js`
 - renamed libfolders to lowercase and removed the lib suffix
 - moved commands outside of `lib`
+- switched from opusscript to node-opus for voice
 
 ### Added
 - state lib with `EventRouter` and `EventGroup` and `Event` classes
 - Subclasses of EventRouter for client events groupes `Client`, `Channel`, `Message` and `Guild`
+- Utility classes for generic SQL Statements
+- logging of unrejected promises
 
 ## [0.11.0-beta] - 2019-03-03
 ### Changed

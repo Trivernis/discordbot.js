@@ -17,7 +17,7 @@ play:
     url_invalid: >
       The URL you provided is not a valid YouTube video or Playlist URL.
     no_url: >
-      You need to provide an URL to a YouTube viceo or Playlist.
+      You need to provide an URL to a YouTube video or Playlist.
     no_voicechannel: >
       You need to join a VoiceChannel to request media playback.
 
@@ -37,7 +37,7 @@ play_next:
     url_invalid: >
       The URL you provided is not a valid YouTube video or Playlist URL.
     no_url: >
-      You need to provide an URL to a YouTube viceo or Playlist.
+      You need to provide an URL to a YouTube video or Playlist.
     no_voicechannel: >
       You need to join a VoiceChannel to request media playback.
 

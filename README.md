@@ -3,6 +3,14 @@ discordbot [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blu
 
 A bot that does the discord thing.
 
+Installation
+---
+
+You can easily install everything with npm `npm i`. If you run into an error see the [discord.js installation guide](https://github.com/discordjs/discord.js#installation) or open an issue. If you run into an error with `ffmpeg-binaries` try using nodejs `v10.15.0`
+
+Running
+---
+
 `node bot.node [--token=<DiscordBotToken>] [--ytapi=<GoogleApiKey>] [--owner=<DiscordTag>] [--prefix=<Char>] [--game=<String>] [-i=<Boolen>]`
 
 The arguments are optional because the token and youtube-api-key that the bot needs to run can also be defined in the config.json in the bot's directory:

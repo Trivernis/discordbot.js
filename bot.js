@@ -248,10 +248,17 @@ class Bot {
 // Executing the main function
 if (typeof require !== 'undefined' && require.main === module) {
     let logger = new logging.Logger('MAIN-init');
+    process.on('unhandledRejection', err => {
+        // Will print "unhandledRejection err is not defined"
+        logger.warn(err.message);
+        logger.debug(err.stack);
+    });
+
     logger.info("Starting up... ");
     logger.debug('Calling constructor...');
     let discordBot = new Bot();
     logger.debug('Initializing services...');
+
     discordBot.initServices().then(() => {
         logger.debug('Starting Bot...');
         discordBot.start().catch((err) => { //eslint-disable-line promise/no-nesting
