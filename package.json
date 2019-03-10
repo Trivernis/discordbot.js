@@ -19,14 +19,14 @@
     "express-session": "1.15.6",
     "ffmpeg-binaries": "4.0.0",
     "fs-extra": "7.0.1",
-    "get-youtube-title": "1.0.0",
     "graphql": "14.1.1",
     "js-md5": "0.7.3",
     "js-sha512": "0.8.0",
     "js-yaml": "latest",
     "node-fetch": "^2.3.0",
-    "node-sass": "4.11.0",
     "node-opus": "0.3.1",
+    "node-sass": "4.11.0",
+    "pg": "^7.8.2",
     "promise-waterfall": "0.1.0",
     "pug": "2.0.3",
     "sqlite3": "4.0.6",
@@ -44,7 +44,8 @@
     "sinon": "7.2.6",
     "eslint-plugin-graphql": "3.0.3",
     "eslint": "5.15.0",
-    "eslint-plugin-promise": "4.0.1"
+    "eslint-plugin-promise": "4.0.1",
+    "opusscript": "0.0.6"
   },
   "eslintConfig": {
     "parserOptions": {

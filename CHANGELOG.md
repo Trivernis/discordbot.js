@@ -18,12 +18,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - renamed libfolders to lowercase and removed the lib suffix
 - moved commands outside of `lib`
 - switched from opusscript to node-opus for voice
+- all hard coded sql statements to generic sql generation
 
 ### Added
 - state lib with `EventRouter` and `EventGroup` and `Event` classes
 - Subclasses of EventRouter for client events groupes `Client`, `Channel`, `Message` and `Guild`
 - Utility classes for generic SQL Statements
 - logging of unrejected promises
+- database class for database abstraction (lib/database)
+- config entry for `database` with supported values `postgresql` or `sqlite`
+- config entry for `databaseConnection` for postgresql (`user`, `host`, `password`, `database`, `port`)
+- table `settings` to each guild to store guild specific settings
 
 ## [0.11.0-beta] - 2019-03-03
 ### Changed

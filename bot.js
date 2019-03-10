@@ -2,11 +2,11 @@ const Discord = require("discord.js"),
     fs = require('fs-extra'),
     logging = require('./lib/utils/logging'),
     msgLib = require('./lib/message'),
-    guilding = require('./lib/guilding'),
+    guilding = require('./lib/guilds'),
     utils = require('./lib/utils'),
     config = require('./config.json'),
     args = require('args-parser')(process.argv),
-    sqliteAsync = require('./lib/utils/sqliteAsync'),
+    dblib = require('./lib/database'),
     authToken = args.token || config.api.botToken,
     prefix = args.prefix || config.prefix || '~',
     gamepresence = args.game || config.presence;
@@ -112,13 +112,14 @@ class Bot {
         this.logger.debug('Checking for ./data/ existence');
         await fs.ensureDir('./data');
         this.logger.verbose('Connecting to main database');
-        this.maindb = new sqliteAsync.Database('./data/main.db');
-        await this.maindb.init();
-
-        await this.maindb.run(`${utils.sql.tableExistCreate} presences (
-            ${utils.sql.pkIdSerial},
-            text VARCHAR(255) UNIQUE NOT NULL
-        )`);
+        this.maindb = new dblib.Database('main');
+        await this.maindb.initDatabase();
+        let sql = this.maindb.sql;
+        await this.maindb.run(sql.createTableIfNotExists('presences', [
+            sql.templates.idcolumn,
+            new dblib.Column('text', sql.types.getVarchar(255),
+                [sql.constraints.unique, sql.constraints.notNull])
+        ]));
         this.logger.debug('Loading Presences...');
         await this.loadPresences();
     }
@@ -145,33 +146,37 @@ class Bot {
 
     /**
      * If a data/presences.txt exists, it is read and each line is put into the presences array.
-     * Each line is also stored in the main.db database. After the file is completely read, it get's deleted.
+     * Each line is also stored in the dbot-main.db database. After the file is completely read, it get's deleted.
      * Then the data is read from the database and if the presence doesn't exist in the presences array, it get's
      * pushed in there. If the presences.txt file does not exist, the data is just read from the database. In the end
      * a rotator is created that rotates the presence every configured duration.
      */
     async loadPresences() {
+        let sql = this.maindb.sql;
         if (await fs.pathExists('./data/presences.txt')) {
             let lineReader = require('readline').createInterface({
                 input: require('fs').createReadStream('./data/presences.txt')
             });
-            lineReader.on('line', (line) => {
-                this.maindb.run('INSERT INTO presences (text) VALUES (?)', [line], (err) => {
-                    if (err)
-                        this.logger.warn(err.message);
-
-                });
-                this.presences.push(line);
+            this.maindb.begin();
+            lineReader.on('line', async (line) => {
+                try {
+                    await this.maindb.query(sql.insert('presences', {text: sql.parameter(1)}), [line]);
+                    this.presences.push(line);
+                } catch (err) {
+                    this.logger.warn(err.message);
+                    this.logger.debug(err.stack);
+                }
             });
+            await this.maindb.commit();
             this.rotator = this.client.setInterval(() => this.rotatePresence(),
                 config.presence_duration || 360000);
             await fs.unlink('./data/presences.txt');
-            let rows = await this.maindb.all('SELECT text FROM presences');
+            let rows = await this.maindb.all(sql.select('presences', false, ['text']));
             for (let row of rows)
                 if (!(row[0] in this.presences))
                     this.presences.push(row.text);
         } else {
-            let rows = await this.maindb.all('SELECT text FROM presences');
+            let rows = await this.maindb.all(sql.select('presences', false, ['text']));
             for (let row of rows)
                 this.presences.push(row.text);
             this.rotator = this.client.setInterval(() => this.rotatePresence(),
@@ -238,6 +243,7 @@ class Bot {
         if (!this.guildHandlers[guild.id]) {
             let newGuildHandler = new guilding.GuildHandler(guild);
             await newGuildHandler.initDatabase();
+            await newGuildHandler.applySettings();
             this.guildHandlers[guild.id] = newGuildHandler;
         }
         return this.guildHandlers[guild.id];

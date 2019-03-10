@@ -24,12 +24,13 @@ class UtilityCommandModule extends cmdLib.CommandModule {
 
     async register(commandHandler) {
         await this._loadTemplate();
+        let sql = this._bot.maindb.sql;
 
         let addPresence = new cmdLib.Command(
             this.template.add_presence,
             new cmdLib.Answer(async (m, k, s) => {
                 this._bot.presences.push(s);
-                await this._bot.maindb.run('INSERT INTO presences (text) VALUES (?)', [s]);
+                await this._bot.maindb.run(sql.insert('presences', {text: sql.parameter(1)}), [s]);
                 return `Added Presence \`${s}\``;
             })
         );

@@ -168,3 +168,28 @@ saved_media:
   response:
     no_saved: >
       There are no saved YouTube URLs :(
+
+volume:
+  <<: *METADATA
+  name: volume
+  permission: dj
+  args:
+    - volume
+  description: >
+    Sets the volume of the Music Player.
+  response:
+    invalid: >
+      The value you entered is an invalid volume.
+
+quality:
+  <<: *METADATA
+  name: quality
+  permission: owner
+  args:
+    - quality
+  description: >
+    Sets the quality of the music of the Music Player.
+    The setting will be applied on the next song.
+  response:
+    invalid: >
+      You entered an invalid quality value.

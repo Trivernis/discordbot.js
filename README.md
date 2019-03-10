@@ -48,6 +48,14 @@ The arguments are optional because the token and youtube-api-key that the bot ne
   "commandSettings": {
     "maxSequenceParallel": 5, // the maximum number of commands executed in parallel
     "maxSequenceSerial": 10 // the maximum number of commands executed in serial
+  },
+  "database": "postgres or sqlite", // choose one
+  "databaseConnection": {
+    "user": "USERNAME",
+    "host": "HOSTNAME OR IP",
+    "password": "DATABASE USERPASSWORD",
+    "database": "BOT DATABASE NAME", // the database needs to exist
+    "port": 5432 // the port of the database server
   }
 }
 ```
