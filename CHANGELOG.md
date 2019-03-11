@@ -29,6 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - config entry for `database` with supported values `postgresql` or `sqlite`
 - config entry for `databaseConnection` for postgresql (`user`, `host`, `password`, `database`, `port`)
 - table `settings` to each guild to store guild specific settings
+- table `messages` to main database where messages are stored for statistical analysis and bug handling
 
 ## [0.11.0-beta] - 2019-03-03
 ### Changed
