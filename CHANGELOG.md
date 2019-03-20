@@ -19,10 +19,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - moved commands outside of `lib`
 - switched from opusscript to node-opus for voice
 - all hard coded sql statements to generic sql generation
+- MusicPlayer to extend the default EventEmitter
+- MessageHandler to accept instances of Response and redirect events to it
 
 ### Added
-- state lib with `EventRouter` and `EventGroup` and `Event` classes
-- Subclasses of EventRouter for client events groupes `Client`, `Channel`, `Message` and `Guild`
 - Utility classes for generic SQL Statements
 - logging of unrejected promises
 - database class for database abstraction (lib/database)
@@ -30,6 +30,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - config entry for `databaseConnection` for postgresql (`user`, `host`, `password`, `database`, `port`)
 - table `settings` to each guild to store guild specific settings
 - table `messages` to main database where messages are stored for statistical analysis and bug handling
+- ExtendedEventEmitter class in lib/utils/extended-events.js
+- Response object that allows the registration of events for messages
 
 ## [0.11.0-beta] - 2019-03-03
 ### Changed

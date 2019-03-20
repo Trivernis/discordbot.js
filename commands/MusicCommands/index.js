@@ -228,6 +228,28 @@ class MusicCommandModule extends cmdLib.CommandModule {
                         .setColor(0x00aaff);
                 else
                     return this.template.media_current.response.not_playing;
+            }, async (response) => {
+                let message = response.message;
+                let gh = await this._getGuildHandler(message.guild);
+
+                if (message.editable && gh.musicPlayer) {
+                    let next = (song) => {
+                        message.edit('', new cmdLib.ExtendedRichEmbed('Now playing:')
+                            .setDescription(`[${song.title}](${song.url})`)
+                            .setImage(utils.YouTube.getVideoThumbnailUrlFromUrl(song.url))
+                            .setColor(0x00aaff));
+                        if (message.id !== message.channel.lastMessageID) {
+                            gh.musicPlayer.off('next', next);
+                            message.delete();
+                        }
+                    };
+                    gh.musicPlayer.on('next', next);
+                    gh.musicPlayer.on('stop', () => {
+                        gh.musicPlayer.off('next', next);
+                        message.delete();
+                    });
+                    response.on('delete', () => gh.musicPlayer.off('next', next));
+                }
             })
         );
 
