@@ -20,7 +20,7 @@
     "ffmpeg-binaries": "4.0.0",
     "fs-extra": "7.0.1",
     "get-youtube-title": "1.0.0",
-    "graphql": "14.1.1",
+    "graphql": "14.2.0",
     "js-md5": "0.7.3",
     "js-sha512": "0.8.0",
     "node-sass": "4.11.0",
