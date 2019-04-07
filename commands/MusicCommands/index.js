@@ -322,6 +322,7 @@ class MusicCommandModule extends cmdLib.CommandModule {
             })
         );
 
+        /* TODO: Delete completely on release
         let volume = new cmdLib.Command(
             this.template.volume,
             new cmdLib.Answer(async (m, k) => {
@@ -335,7 +336,7 @@ class MusicCommandModule extends cmdLib.CommandModule {
                     return this.template.volume.response.invalid;
                 }
             })
-        );
+        );*/
 
         let quality = new cmdLib.Command(
             this.template.quality,
@@ -369,7 +370,6 @@ class MusicCommandModule extends cmdLib.CommandModule {
             .registerCommand(saveMedia)
             .registerCommand(deleteMedia)
             .registerCommand(savedMedia)
-            .registerCommand(volume)
             .registerCommand(quality);
     }
 }

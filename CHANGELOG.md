@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - all hard coded sql statements to generic sql generation
 - MusicPlayer to extend the default EventEmitter
 - MessageHandler to accept instances of Response and redirect events to it
+- switched to `ytdl-core-discord` for youtube audio playback
 
 ### Added
 - Utility classes for generic SQL Statements
@@ -32,6 +33,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - table `messages` to main database where messages are stored for statistical analysis and bug handling
 - ExtendedEventEmitter class in lib/utils/extended-events.js
 - Response object that allows the registration of events for messages
+
+### Removed
+- `~volume` command because volume can't be controlled anymore
+- volume functions and properties from the MusicPlayer
 
 ## [0.11.0-beta] - 2019-03-03
 ### Changed
