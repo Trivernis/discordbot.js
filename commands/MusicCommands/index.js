@@ -239,7 +239,7 @@ class MusicCommandModule extends cmdLib.CommandModule {
                             .setImage(utils.YouTube.getVideoThumbnailUrlFromUrl(song.url))
                             .setColor(0x00aaff));
                         if (message.id !== message.channel.lastMessageID) {
-                            gh.musicPlayer.off('next', next);
+                            gh.musicPlayer.removeListener('next', next);
                             message.delete();
                         }
                     };

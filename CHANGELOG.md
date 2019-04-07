@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - bug on `AnilistApiCommands` where the `RichCharacterInfo` uses a nonexistent function of the `ExtendedRichEmbed`
 - bug on`AnilistApi` where the `.gql` files couldn't be found.
 - Typo in changelog
+- bug on `~np` message that causes the player to crash
 
 ### Changed
 - name of MiscCommands module from `TemplateCommandModule` to `MiscCommandModule`
@@ -33,6 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - table `messages` to main database where messages are stored for statistical analysis and bug handling
 - ExtendedEventEmitter class in lib/utils/extended-events.js
 - Response object that allows the registration of events for messages
+- Handling of error event for every VoiceConnection
 
 ### Removed
 - `~volume` command because volume can't be controlled anymore
