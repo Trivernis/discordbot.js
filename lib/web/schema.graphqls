@@ -292,7 +292,14 @@ type GuildEdge {
     musicPlayer: MusicPlayer
 
     # the saved media of the guild
-    savedMedia: mediaEntryConnection
+    #
+    # Arguments
+    # page: the number of the page
+    # perPage: the number of entries per page
+    savedMedia (
+        page: Int,
+        perPage: Int
+    ): mediaEntryConnection
 }
 
 type GuildConnection {

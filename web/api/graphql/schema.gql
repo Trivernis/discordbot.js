@@ -82,3 +82,13 @@ type Query {
     prefix: String
     logs(first: Int, offset: Int = 0, id: String, last: Int = 10, level: String): [LogEntry]
 }
+
+type Mutation {
+    togglePause(guildId: ID!): MusicPlayer
+    toggleRepeat(guildId: ID!): MusicPlayer
+    skipSong(guildId: ID!): MusicPlayer
+    addMediaToQueue(
+        guildId: ID!,
+        url: String!
+    ): MusicPlayer
+}
