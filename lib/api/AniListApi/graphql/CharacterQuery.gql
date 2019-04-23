@@ -1,0 +1,27 @@
+query ($name: String, $id: Int) {
+    Character(search: $name, id: $id) {
+        id
+        name {
+            first
+            last
+            native
+        }
+        description
+        image {
+            large
+            medium
+        }
+        siteUrl
+        media {
+            edges {
+                characterRole
+                voiceActors(language: JAPANESE) {
+                    ...staffMetadata
+                }
+                node {
+                    ...mediaMetadata
+                }
+            }
+        }
+    }
+}

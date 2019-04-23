@@ -1,6 +1,6 @@
 {
   "name": "discordbot",
-  "version": "1.0.0",
+  "version": "0.11.0",
   "scripts": {
     "start": "node bot.js",
     "test": "mocha --exit",
@@ -23,15 +23,18 @@
     "graphql": "14.2.1",
     "js-md5": "0.7.3",
     "js-sha512": "0.8.0",
+    "js-yaml": "latest",
+    "node-fetch": "^2.3.0",
+    "node-opus": "0.3.1",
     "node-sass": "4.11.0",
-    "opusscript": "0.0.6",
+    "pg": "^7.8.2",
     "promise-waterfall": "0.1.0",
     "pug": "2.0.3",
     "sqlite3": "4.0.6",
     "winston": "3.2.1",
     "winston-daily-rotate-file": "3.8.0",
     "youtube-playlist-info": "1.1.2",
-    "ytdl-core": "0.29.1"
+    "ytdl-core-discord": "^1.0.3"
   },
   "devDependencies": {
     "assert": "1.4.1",
@@ -43,10 +46,12 @@
     "eslint-plugin-graphql": "3.0.3",
     "eslint": "5.16.0",
     "eslint-plugin-promise": "4.1.1"
+    "opusscript": "0.0.6"
   },
   "eslintConfig": {
     "parserOptions": {
-      "ecmaVersion": 2018
+      "ecmaVersion": 2018,
+      "sourceType": "module"
     },
     "env": {
       "node": true,

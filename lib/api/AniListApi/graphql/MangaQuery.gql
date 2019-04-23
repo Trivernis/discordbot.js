@@ -1,0 +1,9 @@
+query MangaData($name: String, $id: Int, $withStaff: Boolean = false, $withMoreData: Boolean = true) {
+    Media (id: $id, search: $name, type: MANGA) {
+        ...mediaMetadata
+        ...mediaAdditionalMetadata @include(if: $withMoreData)
+        ...staffFields @include(if: $withStaff)
+        chapters @include(if: $withMoreData)
+        volumes @include(if: $withMoreData)
+    }
+}

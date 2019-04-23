@@ -1,0 +1,57 @@
+query StaffData($name: String, $id: Int) {
+    Staff(id: $id, search: $name) {
+        id
+        name {
+            first
+            last
+            native
+        }
+        language
+        image {
+            large
+            medium
+        }
+        staffMedia(page: 0, perPage: 10) {
+            edges {
+                node {
+                    id
+                    title {
+                        romaji
+                        english
+                        native
+                    }
+                    siteUrl
+                }
+                characters {
+                    id
+                    name {
+                        first
+                        last
+                    }
+                    siteUrl
+                    image {
+                        large
+                        medium
+                    }
+                }
+                staffRole
+            }
+        }
+        characters(page: 0, perPage: 10) {
+            nodes {
+                id
+                name {
+                    first
+                    last
+                }
+                siteUrl
+                image {
+                    large
+                    medium
+                }
+            }
+        }
+        description(asHtml: false)
+        siteUrl
+    }
+}

@@ -1,0 +1,195 @@
+METADATA: &METADATA
+  category: Music
+  permission: all
+
+play:
+  <<: *METADATA
+  name: play
+  description: >
+    Adds the url to the YouTube video or YouTube playlist into the queue.
+  args:
+    - url
+  response:
+    success: >
+      Added URL to the media queue.
+    failure: >
+      Failed adding the URL to the media queue.
+    url_invalid: >
+      The URL you provided is not a valid YouTube video or Playlist URL.
+    no_url: >
+      You need to provide an URL to a YouTube video or Playlist.
+    no_voicechannel: >
+      You need to join a VoiceChannel to request media playback.
+
+play_next:
+  <<: *METADATA
+  name: playnext
+  description: >
+    Adds the url to the YouTube video or YouTube playlist into the queue as
+    next playing song.
+  args:
+    - url
+  response:
+    success: >
+      Added URL as next media to the media queue.
+    failure: >
+      Failed adding the URL to the media queue.
+    url_invalid: >
+      The URL you provided is not a valid YouTube video or Playlist URL.
+    no_url: >
+      You need to provide an URL to a YouTube video or Playlist.
+    no_voicechannel: >
+      You need to join a VoiceChannel to request media playback.
+
+join:
+  <<: *METADATA
+  name: join
+  description: >
+    Joins the VoiceChannel you are in.
+  response:
+    no_voicechannel: >
+      You need to join a VoiceChannel for me to join.
+
+stop:
+  <<: *METADATA
+  name: stop
+  description: >
+    Stops the media playback and leaves the VoiceChannel.
+  response:
+    success: >
+      Stopped music playback.
+    not_playing: >
+      I'm not playing music at the moment. What do you want me to stop?
+
+pause:
+  <<: *METADATA
+  name: pause
+  description: >
+    Pauses the media playback.
+  response:
+    success: >
+      Paused playback.
+    not_playing: >
+      I'm not playing music at the moment.
+
+resume:
+  <<: *METADATA
+  name: resume
+  description: >
+    Resumes the media playback.
+  response:
+    success: >
+      Resumed playback.
+    not_playing: >
+      I'm not playing music at the moment.
+
+skip:
+  <<: *METADATA
+  name: skip
+  description: >
+    Skips the currently playing song.
+  response:
+    success: >
+      Skipped to the next song.
+    not_playing: >
+      I'm not playing music at the moment.
+
+clear:
+  <<: *METADATA
+  name: clear
+  description: >
+    Clears the media queue.
+  permission: dj
+  response:
+    success: >
+      The media queue has been cleared.
+
+media_queue:
+  <<: *METADATA
+  name: queue
+  descriptions: >
+    Shows the next ten songs in the media queue.
+
+media_current:
+  <<: *METADATA
+  name: np
+  description: >
+    Shows the currently playing song.
+  response:
+    not_playing: >
+      I'm not playing music at the moment.
+
+shuffle:
+  <<: *METADATA
+  name: shuffle
+  description: >
+    Shuffles the media queue
+  response:
+    success: >
+      The queue has been shuffled.
+
+toggle_repeat:
+  <<: *METADATA
+  name: repeat
+  description: >
+    Toggles listening o repeat.
+  response:
+    repeat_true: >
+      Listening on repeat now!
+    repeat_false: >
+      Not listening on repeat anymore.
+
+save_media:
+  <<: *METADATA
+  name: savemedia
+  description: >
+    Saves the YouTube URL with a specific name.
+  permission: dj
+  args:
+    - url
+  usage: savemedia [url] [name...]
+
+delete_media:
+  <<: *METADATA
+  name: deletemedia
+  description: >
+    Deletes a saved YouTube URL from saved media.
+  permission: dj
+  usage: deletemedia [name]
+  response:
+    no_name: >
+      You must provide a name for the media to delete.
+
+saved_media:
+  <<: *METADATA
+  name: savedmedia
+  description: >
+    Shows all saved YouTube URLs.
+  response:
+    no_saved: >
+      There are no saved YouTube URLs :(
+
+volume:
+  <<: *METADATA
+  name: volume
+  permission: dj
+  args:
+    - volume
+  description: >
+    Sets the volume of the Music Player.
+  response:
+    invalid: >
+      The value you entered is an invalid volume.
+
+quality:
+  <<: *METADATA
+  name: quality
+  permission: owner
+  args:
+    - quality
+  description: >
+    Sets the quality of the music of the Music Player.
+    The setting will be applied on the next song.
+  response:
+    invalid: >
+      You entered an invalid quality value.

@@ -1,0 +1,44 @@
+METADATA: &METADATA
+  category: Utility
+  permission: owner
+
+shutdown:
+  <<: *METADATA
+  name: shutdown
+  description: >
+    Shuts down the bot.
+
+add_presence:
+  <<: *METADATA
+  name: addpresence
+  description: >
+    Adds a Rich Presence to the bot.
+  usage: addpresence [presence]
+
+rotate_presence:
+  <<: *METADATA
+  name: rotatepresence
+  description: >
+    Forces a presence rotation
+
+create_user:
+  <<: *METADATA
+  name: createuser
+  description: >
+    Creates a user for the webinterface.
+  args:
+    - username
+    - password
+    - scope
+
+bugreport:
+  <<: *METADATA
+  name: bug
+  permission: all
+  description: >
+    Get information about where to report bugs.
+  response:
+    title: >
+      You want to report a bug?
+    bug_report: >
+      Please report your bugs [here](https://github.com/Trivernis/discordbot.js/issues)
