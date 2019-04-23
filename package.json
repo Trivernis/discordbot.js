@@ -15,7 +15,7 @@
     "discord.js": "11.4.2",
     "express": "4.16.4",
     "express-compile-sass": "4.0.0",
-    "express-graphql": "0.7.1",
+    "express-graphql": "0.8.0",
     "express-session": "1.15.6",
     "ffmpeg-binaries": "4.0.0",
     "fs-extra": "7.0.1",
