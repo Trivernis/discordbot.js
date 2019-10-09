@@ -29,7 +29,7 @@
     "node-sass": "4.12.0",
     "pg": "^7.8.2",
     "promise-waterfall": "0.1.0",
-    "pug": "2.0.3",
+    "pug": "2.0.4",
     "sqlite3": "4.0.6",
     "winston": "3.2.1",
     "winston-daily-rotate-file": "4.2.1",
