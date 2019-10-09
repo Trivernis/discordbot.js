@@ -12,6 +12,8 @@
     "compression": "1.7.4",
     "connect-sqlite3": "0.9.11",
     "cors": "2.8.5",
+    "discord.js": "^11.5.1",
+    "express": "4.16.4",
     "discord.js": "11.5.1",
     "express": "4.17.1",
     "express-compile-sass": "4.0.0",
@@ -34,7 +36,7 @@
     "winston": "3.2.1",
     "winston-daily-rotate-file": "4.2.1",
     "youtube-playlist-info": "1.1.2",
-    "ytdl-core-discord": "1.0.3"
+    "ytdl-core": "^1.0.0",
   },
   "devDependencies": {
     "assert": "2.0.0",

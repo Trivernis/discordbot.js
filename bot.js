@@ -240,35 +240,6 @@ class Bot {
                     gh.musicPlayer.checkListeners();
             }
         });
-
-        this.client.on('message', async (msg) => {
-            try {
-                let sql = this.maindb.sql;
-                let server = null;
-                let channel = null;
-                let user = msg.author.tag;
-                let message = msg.content;
-                if (msg.guild) {
-                    server = msg.guild.name;
-                    channel = msg.channel.name;
-                    await this.maindb.run(sql.insert('messages', {
-                        server: sql.parameter(1),
-                        channel: sql.parameter(2),
-                        username: sql.parameter(3),
-                        message: sql.parameter(4)
-                    }), [server, channel, user, message]);
-                } else {
-                    await this.maindb.run(sql.insert('messages', {
-                        channel: sql.parameter(1),
-                        username: sql.parameter(2),
-                        message: sql.parameter(3)
-                    }), ['PRIVATE', user, message]);
-                }
-            } catch (err) {
-                this.logger.warn(err.message);
-                this.logger.debug(err.stack);
-            }
-        });
     }
 
     /**

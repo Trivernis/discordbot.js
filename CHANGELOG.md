@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - bug on`AnilistApi` where the `.gql` files couldn't be found.
 - Typo in changelog
 - bug on `~np` message that causes the player to crash
+- database handler using release on pooled client
 
 ### Changed
 - name of MiscCommands module from `TemplateCommandModule` to `MiscCommandModule`
@@ -22,7 +23,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - all hard coded sql statements to generic sql generation
 - MusicPlayer to extend the default EventEmitter
 - MessageHandler to accept instances of Response and redirect events to it
-- switched to `ytdl-core-discord` for youtube audio playback
 
 ### Added
 - Utility classes for generic SQL Statements
