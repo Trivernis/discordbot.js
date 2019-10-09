@@ -16,7 +16,7 @@
     "express": "4.16.4",
     "express-compile-sass": "4.0.0",
     "express-graphql": "0.8.0",
-    "express-session": "1.16.1",
+    "express-session": "1.16.2",
     "ffmpeg-binaries": "4.0.0",
     "fs-extra": "7.0.1",
     "get-youtube-title": "1.0.0",
