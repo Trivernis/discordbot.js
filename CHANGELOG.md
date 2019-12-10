@@ -4,7 +4,7 @@ All notable changes to the discord bot will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.12.0-beta]
 ### Fixed
 - bug where the bot counts itself when calculating needed votes to skip/stop music
 - bug on the `ExtendedRichEmbed` where `addField` and `setDescription` throws an error when the value is null or undefined
@@ -55,7 +55,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 - `ExtendedRichEmbed.addNonemptyField` because the overide of `.addField` does the same
 
-## [0.10.1]-beta - 2019-03-03
+## [0.10.1-beta] - 2019-03-03
 ### Changed
 - Bugfix on RichEmbed not returning itself on addField and setDescription because of method overide
 - AniList CommandModule bug fix on `~alCharacter` not returning voice actor names
