@@ -5,5 +5,8 @@
   "baseBranches": [
     "dependency-updates"
   ],
-  "automerge": true
+  "automerge": true,
+  "major": {
+    "automerge": true
+  }
 }
