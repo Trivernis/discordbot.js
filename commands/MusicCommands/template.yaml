@@ -17,7 +17,7 @@ play:
     url_invalid: >
       The URL you provided is not a valid YouTube video or Playlist URL.
     no_url: >
-      You need to provide an URL to a YouTube viceo or Playlist.
+      You need to provide an URL to a YouTube video or Playlist.
     no_voicechannel: >
       You need to join a VoiceChannel to request media playback.
 
@@ -37,7 +37,7 @@ play_next:
     url_invalid: >
       The URL you provided is not a valid YouTube video or Playlist URL.
     no_url: >
-      You need to provide an URL to a YouTube viceo or Playlist.
+      You need to provide an URL to a YouTube video or Playlist.
     no_voicechannel: >
       You need to join a VoiceChannel to request media playback.
 
@@ -168,3 +168,28 @@ saved_media:
   response:
     no_saved: >
       There are no saved YouTube URLs :(
+
+volume:
+  <<: *METADATA
+  name: volume
+  permission: dj
+  args:
+    - volume
+  description: >
+    Sets the volume of the Music Player.
+  response:
+    invalid: >
+      The value you entered is an invalid volume.
+
+quality:
+  <<: *METADATA
+  name: quality
+  permission: owner
+  args:
+    - quality
+  description: >
+    Sets the quality of the music of the Music Player.
+    The setting will be applied on the next song.
+  response:
+    invalid: >
+      You entered an invalid quality value.

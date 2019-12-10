@@ -1,4 +1,4 @@
-const cmdLib = require('../../CommandLib');
+const cmdLib = require('../../lib/command');
 
 /**
  * This command module includes utility commands for the server.
@@ -66,14 +66,15 @@ class ServerUtilityCommandModule extends cmdLib.CommandModule {
                 } else if (sequence.find(x => x.length > maxSqSer)) {
                     return this.template.save_cmd.response.sequence_too_many_serial;
                 } else {
-                    let row = await gh.db
-                        .get('SELECT COUNT(*) count FROM commands WHERE name = ?', [k.name]);
-                    if (!row || row.count === 0)
-                        await gh.db
-                            .run('INSERT INTO commands (name, command) VALUES (?, ?)', [k.name, JSON.stringify(sequence)]);
+                    let sql = gh.db.sql;
+                    let row = await gh.db.get(sql.select('commands', false, [sql.count('*')],
+                        sql.where('name', '=', sql.parameter(1))), [k.name]);
+                    if (!row || Number(row.count) === 0)
+                        await gh.db.run(sql.insert('commands', {name: sql.parameter(1), command: sql.parameter(2)}),
+                            [k.name, JSON.stringify(sequence)]);
                     else
-                        await await gh.db
-                            .run('UPDATE commands SET command = ? WHERE name = ?', [JSON.stringify(sequence), k.name]);
+                        await gh.db.run(sql.update('commands', {command: sql.parameter(1)}, sql.where('name', '=', sql.parameter(2))),
+                            [JSON.stringify(sequence), k.name]);
                 }
             })
         );
@@ -82,7 +83,7 @@ class ServerUtilityCommandModule extends cmdLib.CommandModule {
             this.template.delete_cmd,
             new cmdLib.Answer(async (m, k) => {
                 let gh = await this._getGuildHandler(m.guild);
-                await gh.db.run('DELETE FROM commands WHERE name = ?', [k.name]);
+                await gh.db.run(gh.db.sql.delete('commands', gh.db.sql.where('name', '=', gh.db.sql.parameter(1)), ), [k.name]);
                 return `Deleted command ${k.name}`;
             })
         );
@@ -93,7 +94,7 @@ class ServerUtilityCommandModule extends cmdLib.CommandModule {
                 let gh = await this._getGuildHandler(m.guild);
                 let response = new cmdLib.ExtendedRichEmbed('Saved Commands')
                     .setFooter(`Execute a saved entry with ${this._config.prefix}execute [Entryname]`);
-                let rows = await gh.db.all('SELECT name, command FROM commands');
+                let rows = await gh.db.all(gh.db.sql.select('commands', ['name', 'command']));
                 if (rows.length === 0)
                     return this.template.saved_cmd.response.no_commands;
                 else
@@ -107,8 +108,8 @@ class ServerUtilityCommandModule extends cmdLib.CommandModule {
             this.template.execute,
             new cmdLib.Answer(async (m, k) => {
                 let gh = await this._getGuildHandler(m.guild);
-                let row = await gh.db
-                    .get('SELECT command FROM commands WHERE name = ?', [k.name]);
+                let row = await gh.db.get(gh.db.sql.select('commands',false, ['command'],
+                    gh.db.sql.where('name', '=', gh.db.sql.parameter(1))), [k.name]);
                 if (row)
                     await this._messageHandler
                         .executeCommandSequence(JSON.parse(row.command), m);

@@ -1,5 +1,5 @@
 /* template index.js. Doesn't implement actual commands */
-const cmdLib = require('../../CommandLib');
+const cmdLib = require('../../lib/command');
 
 /**
  * Several commands that are that special that they can't be included in any other module.
@@ -15,7 +15,7 @@ function delay(seconds) {
     });
 }
 
-class TemplateCommandModule extends cmdLib.CommandModule {
+class MiscCommandModule extends cmdLib.CommandModule {
 
     constructor() {
         super(cmdLib.CommandScopes.Global);
@@ -78,5 +78,5 @@ class TemplateCommandModule extends cmdLib.CommandModule {
 
 
 Object.assign(exports, {
-    module: TemplateCommandModule
+    module: MiscCommandModule
 });

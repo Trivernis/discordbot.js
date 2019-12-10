@@ -1,6 +1,6 @@
-const cmdLib = require('../../CommandLib'),
+const cmdLib = require('../../lib/command'),
     fsx = require('fs-extra'),
-    utils = require('../../utils');
+    utils = require('../../lib/utils');
 
 /**
  * Info commands provide information about the bot. These informations are

@@ -1,6 +1,6 @@
-const cmdLib = require('../../CommandLib'),
-    utils = require('../../utils'),
-    config = require('../../../config');
+const cmdLib = require('../../lib/command'),
+    utils = require('../../lib/utils'),
+    config = require('../../config');
 
 function checkPermission(msg, rolePerm) {
     if (!rolePerm || ['all', 'any', 'everyone'].includes(rolePerm))
@@ -42,9 +42,9 @@ class MusicCommandModule extends cmdLib.CommandModule {
     async _connectAndPlay(gh, vc, url, next) {
         if (!gh.musicPlayer.connected) {
             await gh.musicPlayer.connect(vc);
-            await gh.musicPlayer.playYouTube(url, next);
+            return await gh.musicPlayer.playYouTube(url, next);
         } else {
-            await gh.musicPlayer.playYouTube(url, next);
+            return await gh.musicPlayer.playYouTube(url, next);
         }
     }
 
@@ -68,17 +68,24 @@ class MusicCommandModule extends cmdLib.CommandModule {
             return t.response.no_url;
         if (!utils.YouTube.isValidEntityUrl(url)) {
             url = s;
-            let row = await gh.db.get('SELECT url FROM playlists WHERE name = ?', [url]);
+            let row = await gh.db.get(gh.db.sql.select('playlists', false, ['url'],
+                gh.db.sql.where('name', '=', gh.db.sql.parameter(1))), [url]);
             if (!row) {
                 this._logger.debug('Got invalid url for play command.');
                 return t.response.url_invalid;
             } else {
-                await this._connectAndPlay(gh, vc, row.url, n);
-                return t.response.success;
+                let songcount = await this._connectAndPlay(gh, vc, row.url, n);
+                if (songcount)
+                    return `Added ${songcount} songs to the queue.`;
+                else
+                    return t.response.success;
             }
         } else {
-            await this._connectAndPlay(gh, vc, url, n);
-            return t.response.success;
+            let songcount = await this._connectAndPlay(gh, vc, url, n);
+            if (songcount)
+                return `Added ${songcount} songs to the queue.`;
+            else
+                return t.response.success;
         }
     }
 
@@ -117,7 +124,7 @@ class MusicCommandModule extends cmdLib.CommandModule {
                 let vc = gh.musicPlayer.voiceChannel || m.member.voiceChannel;
                 if (gh.musicPlayer.connected && vc) {
                     let votes = gh.updateCommandVote(stop.name, m.author.tag);
-                    let neededVotes = Math.ceil(vc.members.size/2);
+                    let neededVotes = Math.ceil((vc.members.size - 1) / 2);
 
                     if (neededVotes <= votes.count || checkPermission(m, 'dj')) {
                         this._logger.debug(`Vote passed. ${votes.count} out of ${neededVotes} for stop or permission granted`);
@@ -167,7 +174,7 @@ class MusicCommandModule extends cmdLib.CommandModule {
                 let vc = gh.musicPlayer.voiceChannel || m.member.voiceChannel;
                 if (gh.musicPlayer.playing && vc) {
                     let votes = gh.updateCommandVote(skip.name, m.author.tag);
-                    let neededVotes = Math.ceil(vc.members.size/2);
+                    let neededVotes = Math.ceil((vc.members.size - 1) / 2);
 
                     if (neededVotes <= votes.count || checkPermission(m, 'dj')) {
                         this._logger.debug(`Vote passed. ${votes.count} out of ${neededVotes} for skip or permission granted`);
@@ -221,6 +228,28 @@ class MusicCommandModule extends cmdLib.CommandModule {
                         .setColor(0x00aaff);
                 else
                     return this.template.media_current.response.not_playing;
+            }, async (response) => {
+                let message = response.message;
+                let gh = await this._getGuildHandler(message.guild);
+
+                if (message.editable && gh.musicPlayer) {
+                    let next = (song) => {
+                        message.edit('', new cmdLib.ExtendedRichEmbed('Now playing:')
+                            .setDescription(`[${song.title}](${song.url})`)
+                            .setImage(utils.YouTube.getVideoThumbnailUrlFromUrl(song.url))
+                            .setColor(0x00aaff));
+                        if (message.id !== message.channel.lastMessageID) {
+                            gh.musicPlayer.removeListener('next', next);
+                            message.delete();
+                        }
+                    };
+                    gh.musicPlayer.on('next', next);
+                    gh.musicPlayer.on('stop', () => {
+                        gh.musicPlayer.off('next', next);
+                        message.delete();
+                    });
+                    response.on('delete', () => gh.musicPlayer.off('next', next));
+                }
             })
         );
 
@@ -249,14 +278,15 @@ class MusicCommandModule extends cmdLib.CommandModule {
             new cmdLib.Answer(async (m, k, s) => {
                 let gh = await this._getGuildHandler(m.guild);
                 let saveName = s.replace(k.url + ' ', '');
-                let row = await gh.db
-                    .get('SELECT COUNT(*) count FROM playlists WHERE name = ?', [saveName]);
-                if (!row || row.count === 0)
-                    await gh.db.run('INSERT INTO playlists (name, url) VALUES (?, ?)',
-                            [saveName, k.url]);
+                let row = await gh.db.get(gh.db.sql.select('playlists', false,
+                    [gh.db.sql.count('*')], gh.db.sql.where('name', '=', gh.db.sql.parameter(1))), [saveName]);
+                if (!row || Number(row.count) === 0)
+                    await gh.db.run(gh.db.sql.insert('playlists',
+                        {name: gh.db.sql.parameter(1), url: gh.db.sql.parameter(2)}), [saveName, k.url]);
                 else
-                    await gh.db.run('UPDATE playlists SET url = ? WHERE name = ?',
-                        [k.url, saveName]);
+                    await gh.db.run(gh.db.sql.update('playlists',
+                        {url: gh.db.sql.parameter(1)},
+                        gh.db.sql.where('name', '=', gh.db.sql.parameter(2))), [k.url, saveName]);
                 return `Saved song/playlist as ${saveName}`;
             })
         );
@@ -268,7 +298,7 @@ class MusicCommandModule extends cmdLib.CommandModule {
                 if (!s) {
                     return this.template.delete_media.response.no_name;
                 } else {
-                    await gh.db.run('DELETE FROM playlists WHERE name = ?', [s]);
+                    await gh.db.run(gh.db.sql.delete('playlists', gh.db.sql.where('name', '=', gh.db.sql.parameter(1))), [s]);
                     return `Deleted ${s} from saved media`;
                 }
             })
@@ -279,7 +309,7 @@ class MusicCommandModule extends cmdLib.CommandModule {
             new cmdLib.Answer(async (m) => {
                 let gh = await this._getGuildHandler(m.guild);
                 let response = '';
-                let rows = await gh.db.all('SELECT name, url FROM playlists');
+                let rows = await gh.db.all(gh.db.sql.select('playlists', false, ['name', 'url']));
                 for (let row of rows)
                     response += `[${row.name}](${row.url})\n`;
 
@@ -289,6 +319,36 @@ class MusicCommandModule extends cmdLib.CommandModule {
                     return new cmdLib.ExtendedRichEmbed('Saved Songs and Playlists')
                         .setDescription(response)
                         .setFooter(`Play a saved entry with play [Entryname]`);
+            })
+        );
+
+        let volume = new cmdLib.Command(
+            this.template.volume,
+            new cmdLib.Answer(async (m, k) => {
+                let volume = Number(k.volume);
+                if (volume && volume <= 100 && volume >= 0) {
+                    let gh = await this._getGuildHandler(m.guild);
+                    gh.musicPlayer.setVolume(Math.round(volume)/100);
+                    await gh.db.setSetting('musicPlayerVolume', Math.round(volume)/100);
+                    return `Set music volume to **${volume}**`;
+                } else {
+                    return this.template.volume.response.invalid;
+                }
+            })
+        );
+
+        let quality = new cmdLib.Command(
+            this.template.quality,
+            new cmdLib.Answer(async (m, k) => {
+                let allowed = ['highest', 'lowest', 'highestaudio', 'lowestaudio'];
+                if (allowed.includes(k.quality)) {
+                    let gh = await this._getGuildHandler(m.guild);
+                    gh.musicPlayer.quality = k.quality;
+                    await gh.db.setSetting('musicPlayerQuality', k.quality);
+                    return `Set music quality to **${k.quality}**`;
+                } else {
+                    return this.template.quality.response.invalid;
+                }
             })
         );
 
@@ -308,10 +368,12 @@ class MusicCommandModule extends cmdLib.CommandModule {
             .registerCommand(toggleRepeat)
             .registerCommand(saveMedia)
             .registerCommand(deleteMedia)
-            .registerCommand(savedMedia);
+            .registerCommand(savedMedia)
+            .registerCommand(volume)
+            .registerCommand(quality);
     }
 }
 
 Object.assign(exports, {
-    'module': MusicCommandModule
+    module: MusicCommandModule
 });

@@ -13,7 +13,7 @@ mockobjects.mockLogger = {
 };
 
 describe('lib/utils', function() {
-    const utils = require('../lib/utils.js');
+    const utils = require('../lib/utils/index.js');
 
     describe('#getSplitDuration', function() {
        it('returns an object from milliseconds', function() {
@@ -28,7 +28,7 @@ describe('lib/utils', function() {
         it('returns the correct extension for a filename', function(done) {
             assert(utils.getExtension('test.txt') === '.txt');
             assert(utils.getExtension('test.tar.gz') === '.gz');
-            assert(utils.getExtension('../lib/utils.js') === '.js');
+            assert(utils.getExtension('../lib/index.js') === '.js');
             assert(utils.getExtension('.gitignore') === '.gitignore');
             done();
         });
@@ -179,7 +179,7 @@ describe('lib/utils', function() {
 
 describe('lib/music', function() {
 
-    const music = rewire('../lib/MusicLib');
+    const music = rewire('../lib/music');
     const Readable = require('stream').Readable;
 
     music.__set__("logger", mockobjects.mockLogger);
@@ -329,8 +329,8 @@ describe('lib/music', function() {
     });
 });
 
-describe('lib/CommandLib', function() {
-    let cmdLib = require('../lib/CommandLib');
+describe('lib/command', function() {
+    let cmdLib = require('../lib/command');
 
     describe('Answer', function() {
 
@@ -373,8 +373,8 @@ describe('lib/CommandLib', function() {
     });
 });
 
-describe('lib/MessageLib', function() {
-    let msgLib = require('../lib/MessageLib');
+describe('lib/message', function() {
+    let msgLib = require('../lib/message');
 
     describe('MessageHandler', function() {
        it ('parses a command syntax', function() {

@@ -1,5 +1,5 @@
-const cmdLib = require('../../CommandLib'),
-    anilistApi = require('../../api/AnilistApi');
+const cmdLib = require('../../lib/command'),
+    anilistApi = require('../../lib/api/AniListApi');
 
 /**
  * The AniList commands are all commands that interact with the anilist api.
@@ -144,7 +144,7 @@ class RichCharacterInfo extends cmdLib.ExtendedRichEmbed {
                 .replace(/~!.*?!~/g, '')
                 .replace(/\n\n\n/g, ''));
         if (characterInfo.media && characterInfo.media.edges)
-            this.addNonemptyField(
+            this.addField(
                 'Media Appeareance',
                 characterInfo.media.edges.map(x => {
                     let media = x.node;

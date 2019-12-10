@@ -1,12 +1,12 @@
 const Discord = require("discord.js"),
     fs = require('fs-extra'),
-    logging = require('./lib/logging'),
-    msgLib = require('./lib/MessageLib'),
-    guilding = require('./lib/guilding'),
+    logging = require('./lib/utils/logging'),
+    msgLib = require('./lib/message'),
+    guilding = require('./lib/guilds'),
     utils = require('./lib/utils'),
     config = require('./config.json'),
     args = require('args-parser')(process.argv),
-    sqliteAsync = require('./lib/sqliteAsync'),
+    dblib = require('./lib/database'),
     authToken = args.token || config.api.botToken,
     prefix = args.prefix || config.prefix || '~',
     gamepresence = args.game || config.presence;
@@ -69,24 +69,24 @@ class Bot {
         if (config.webinterface && config.webinterface.enabled)
             await this.initializeWebserver();
         this.logger.verbose('Registering commands');
-        await this.messageHandler.registerCommandModule(require('./lib/commands/AnilistApiCommands').module, {});
-        await this.messageHandler.registerCommandModule(require('./lib/commands/UtilityCommands').module, {
+        await this.messageHandler.registerCommandModule(require('./commands/AnilistApiCommands').module, {});
+        await this.messageHandler.registerCommandModule(require('./commands/UtilityCommands').module, {
             bot: this,
             config: config
         });
-        await this.messageHandler.registerCommandModule(require('./lib/commands/InfoCommands').module, {
+        await this.messageHandler.registerCommandModule(require('./commands/InfoCommands').module, {
             client: this.client,
             messageHandler: this.messageHandler
         });
-        await this.messageHandler.registerCommandModule(require('./lib/commands/MusicCommands').module, {
+        await this.messageHandler.registerCommandModule(require('./commands/MusicCommands').module, {
             getGuildHandler: async (g) => await this.getGuildHandler(g)
         });
-        await this.messageHandler.registerCommandModule(require('./lib/commands/ServerUtilityCommands').module, {
+        await this.messageHandler.registerCommandModule(require('./commands/ServerUtilityCommands').module, {
             getGuildHandler: async (g) => await this.getGuildHandler(g),
             messageHandler: this.messageHandler,
             config: config
         });
-        await this.messageHandler.registerCommandModule(require('./lib/commands/MiscCommands').module, {});
+        await this.messageHandler.registerCommandModule(require('./commands/MiscCommands').module, {});
         this.registerEvents();
     }
 
@@ -112,13 +112,22 @@ class Bot {
         this.logger.debug('Checking for ./data/ existence');
         await fs.ensureDir('./data');
         this.logger.verbose('Connecting to main database');
-        this.maindb = new sqliteAsync.Database('./data/main.db');
-        await this.maindb.init();
-
-        await this.maindb.run(`${utils.sql.tableExistCreate} presences (
-            ${utils.sql.pkIdSerial},
-            text VARCHAR(255) UNIQUE NOT NULL
-        )`);
+        this.maindb = new dblib.Database('main');
+        await this.maindb.initDatabase();
+        let sql = this.maindb.sql;
+        await this.maindb.run(sql.createTableIfNotExists('presences', [
+            sql.templates.idcolumn,
+            new dblib.Column('text', sql.types.getVarchar(255),
+                [sql.constraints.unique, sql.constraints.notNull])
+        ]));
+        await this.maindb.run(sql.createTableIfNotExists('messages', [
+            sql.templates.idcolumn,
+            new dblib.Column('server', sql.types.getVarchar(255)),
+            new dblib.Column('channel', sql.types.getVarchar(255)),
+            new dblib.Column('username', sql.types.getVarchar(255), [sql.constraints.notNull]),
+            new dblib.Column('message', sql.types.text),
+            new dblib.Column('timestamp', sql.types.datetime, [sql.constraints.notNull, sql.default('NOW()')])
+        ]));
         this.logger.debug('Loading Presences...');
         await this.loadPresences();
     }
@@ -128,7 +137,7 @@ class Bot {
      */
     async initializeWebserver() {
         this.logger.verbose('Importing weblib');
-        weblib = require('./lib/WebLib');
+        weblib = require('./lib/web');
         this.logger.verbose('Creating WebServer');
         this.webServer = new weblib.WebServer(config.webinterface.port || 8080);
         this.logger.debug('Setting Reference Objects to webserver');
@@ -145,33 +154,37 @@ class Bot {
 
     /**
      * If a data/presences.txt exists, it is read and each line is put into the presences array.
-     * Each line is also stored in the main.db database. After the file is completely read, it get's deleted.
+     * Each line is also stored in the dbot-main.db database. After the file is completely read, it get's deleted.
      * Then the data is read from the database and if the presence doesn't exist in the presences array, it get's
      * pushed in there. If the presences.txt file does not exist, the data is just read from the database. In the end
      * a rotator is created that rotates the presence every configured duration.
      */
     async loadPresences() {
+        let sql = this.maindb.sql;
         if (await fs.pathExists('./data/presences.txt')) {
             let lineReader = require('readline').createInterface({
                 input: require('fs').createReadStream('./data/presences.txt')
             });
-            lineReader.on('line', (line) => {
-                this.maindb.run('INSERT INTO presences (text) VALUES (?)', [line], (err) => {
-                    if (err)
-                        this.logger.warn(err.message);
-
-                });
-                this.presences.push(line);
+            this.maindb.begin();
+            lineReader.on('line', async (line) => {
+                try {
+                    await this.maindb.query(sql.insert('presences', {text: sql.parameter(1)}), [line]);
+                    this.presences.push(line);
+                } catch (err) {
+                    this.logger.warn(err.message);
+                    this.logger.debug(err.stack);
+                }
             });
+            await this.maindb.commit();
             this.rotator = this.client.setInterval(() => this.rotatePresence(),
                 config.presence_duration || 360000);
             await fs.unlink('./data/presences.txt');
-            let rows = await this.maindb.all('SELECT text FROM presences');
+            let rows = await this.maindb.all(sql.select('presences', false, ['text']));
             for (let row of rows)
                 if (!(row[0] in this.presences))
                     this.presences.push(row.text);
         } else {
-            let rows = await this.maindb.all('SELECT text FROM presences');
+            let rows = await this.maindb.all(sql.select('presences', false, ['text']));
             for (let row of rows)
                 this.presences.push(row.text);
             this.rotator = this.client.setInterval(() => this.rotatePresence(),
@@ -238,6 +251,7 @@ class Bot {
         if (!this.guildHandlers[guild.id]) {
             let newGuildHandler = new guilding.GuildHandler(guild);
             await newGuildHandler.initDatabase();
+            await newGuildHandler.applySettings();
             this.guildHandlers[guild.id] = newGuildHandler;
         }
         return this.guildHandlers[guild.id];
@@ -248,10 +262,17 @@ class Bot {
 // Executing the main function
 if (typeof require !== 'undefined' && require.main === module) {
     let logger = new logging.Logger('MAIN-init');
+    process.on('unhandledRejection', err => {
+        // Will print "unhandledRejection err is not defined"
+        logger.warn(err.message);
+        logger.debug(err.stack);
+    });
+
     logger.info("Starting up... ");
     logger.debug('Calling constructor...');
     let discordBot = new Bot();
     logger.debug('Initializing services...');
+
     discordBot.initServices().then(() => {
         logger.debug('Starting Bot...');
         discordBot.start().catch((err) => { //eslint-disable-line promise/no-nesting

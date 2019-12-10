@@ -4,7 +4,43 @@ All notable changes to the discord bot will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.11.0] - 2019-03-03
+## [Unreleased]
+### Fixed
+- bug where the bot counts itself when calculating needed votes to skip/stop music
+- bug on the `ExtendedRichEmbed` where `addField` and `setDescription` throws an error when the value is null or undefined
+- bug on `AnilistApiCommands` where the `RichCharacterInfo` uses a nonexistent function of the `ExtendedRichEmbed`
+- bug on`AnilistApi` where the `.gql` files couldn't be found.
+- Typo in changelog
+- bug on `~np` message that causes the player to crash
+- database handler using release on pooled client
+
+### Changed
+- name of MiscCommands module from `TemplateCommandModule` to `MiscCommandModule`
+- moved everything in `lib` to subfolders with the same name as the files and renamed the files to `index.js`
+- renamed libfolders to lowercase and removed the lib suffix
+- moved commands outside of `lib`
+- switched from opusscript to node-opus for voice
+- all hard coded sql statements to generic sql generation
+- MusicPlayer to extend the default EventEmitter
+- MessageHandler to accept instances of Response and redirect events to it
+
+### Added
+- Utility classes for generic SQL Statements
+- logging of unrejected promises
+- database class for database abstraction (lib/database)
+- config entry for `database` with supported values `postgresql` or `sqlite`
+- config entry for `databaseConnection` for postgresql (`user`, `host`, `password`, `database`, `port`)
+- table `settings` to each guild to store guild specific settings
+- table `messages` to main database where messages are stored for statistical analysis and bug handling
+- ExtendedEventEmitter class in lib/utils/extended-events.js
+- Response object that allows the registration of events for messages
+- Handling of error event for every VoiceConnection
+
+### Removed
+- `~volume` command because volume can't be controlled anymore
+- volume functions and properties from the MusicPlayer
+
+## [0.11.0-beta] - 2019-03-03
 ### Changed
 - template Files to name `template.yaml`
 - loading template file form CommandModule property `templateFile` to loading the `template.yaml` file from the `_templateDir` property (still supporting loading form templateFile)
@@ -19,12 +55,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 - `ExtendedRichEmbed.addNonemptyField` because the overide of `.addField` does the same
 
-## [0.10.1] - 2019-03-03
+## [0.10.1]-beta - 2019-03-03
 ### Changed
 - Bugfix on RichEmbed not returning itself on addField and setDescription because of method overide
 - AniList CommandModule bug fix on `~alCharacter` not returning voice actor names
 
-## [0.10.0] - 2019-03-03
+## [0.10.0-beta] - 2019-03-03
 ### Added
 - AniList api commands powered by [AniList.co](https://www.anilist.co)
 - MessageHandler - handles all incoming messages, parses the syntax, executes the syntax and handles rate limits
