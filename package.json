@@ -34,7 +34,7 @@
     "pug": "2.0.4",
     "sqlite3": "4.1.0",
     "winston": "3.2.1",
-    "winston-daily-rotate-file": "4.2.1",
+    "winston-daily-rotate-file": "4.4.1",
     "youtube-playlist-info": "1.1.2",
     "ytdl-core": "1.0.0"
   },
